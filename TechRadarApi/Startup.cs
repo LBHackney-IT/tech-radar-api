@@ -112,19 +112,10 @@ namespace TechRadarApi
 
             ConfigureLogging(services, Configuration);
 
-            ConfigureDbContext(services);
             services.ConfigureDynamoDB();
 
             RegisterGateways(services);
             RegisterUseCases(services);
-        }
-
-        private static void ConfigureDbContext(IServiceCollection services)
-        {
-            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
-
-            services.AddDbContext<DatabaseContext>(
-                opt => opt.UseNpgsql(connectionString).AddXRayInterceptor(true));
         }
 
         private static void ConfigureLogging(IServiceCollection services, IConfiguration configuration)
