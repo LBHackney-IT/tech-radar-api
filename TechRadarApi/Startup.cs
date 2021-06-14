@@ -171,7 +171,7 @@ namespace TechRadarApi
             {
                 app.UseHsts();
             }
-            
+
             app.UseXRay("tech-radar-api");
 
 
