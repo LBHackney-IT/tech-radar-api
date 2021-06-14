@@ -1,10 +1,10 @@
 version: "3.2"
 
 services:
-  base-api:
-    image: base-api
+  tech-radar-api:
+    image: tech-radar-api
     build:
-      context: BaseApi/
+      context: TechRadarApi/
       dockerfile: ./Dockerfile
     ports:
       - 3000:3000
@@ -25,11 +25,11 @@ services:
     volumes:
       - ./database:/docker-entrypoint-initdb.d
 
-  base-api-test:
-    image: base-api-test
+  tech-radar-api-test:
+    image: tech-radar-api-test
     build:
       context: .
-      dockerfile: BaseApi.Tests/Dockerfile
+      dockerfile: TechRadarApi.Tests/Dockerfile
     environment:
       - DB_HOST=test-database
       - DB_PORT=5432
