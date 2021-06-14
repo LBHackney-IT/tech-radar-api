@@ -30,7 +30,7 @@ namespace TechRadarApi.V1.Gateways
 
         public Technology GetEntityById(Guid id)
         {
-            var result = _dynamoDbContext.LoadAsync<TechnologyDbEntity>(id).GetAwaiter().GetResult();
+            var result = _dynamoDbContext.LoadAsync<TechnologyDbEntity>(id.ToString()).GetAwaiter().GetResult();
             return result?.ToDomain();
         }
     }

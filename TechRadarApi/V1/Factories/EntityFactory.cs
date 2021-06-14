@@ -1,5 +1,6 @@
 using TechRadarApi.V1.Domain;
 using TechRadarApi.V1.Infrastructure;
+using System;
 
 namespace TechRadarApi.V1.Factories
 {
@@ -9,7 +10,7 @@ namespace TechRadarApi.V1.Factories
         {
             return new Technology
             {
-                Id = databaseEntity.Id,
+                Id = Guid.Parse(databaseEntity.Id),
                 Name = databaseEntity.Name,
                 Description = databaseEntity.Description,
                 Category = databaseEntity.Category,
@@ -21,7 +22,7 @@ namespace TechRadarApi.V1.Factories
         {
             return new TechnologyDbEntity
             {
-                Id = entity.Id,
+                Id = entity.Id.ToString(),
                 Name = entity.Name,
                 Description = entity.Description,
                 Category = entity.Category,
