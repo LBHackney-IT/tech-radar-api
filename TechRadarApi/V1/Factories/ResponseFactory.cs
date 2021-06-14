@@ -7,14 +7,19 @@ namespace TechRadarApi.V1.Factories
 {
     public static class ResponseFactory
     {
-        //TODO: Map the fields in the domain object(s) to fields in the response object(s).
-        // More information on this can be found here https://github.com/LBHackney-IT/lbh-tech-radar-api/wiki/Factory-object-mappings
-        public static ResponseObject ToResponse(this Entity domain)
+        public static TechnologyResponseObject ToResponse(this Technology domain)
         {
-            return new ResponseObject();
+            return new TechnologyResponseObject
+            {
+                Id = domain.Id,
+                Name = domain.Name,
+                Description = domain.Description,
+                Category = domain.Category,
+                Technique = domain.Technique
+            };
         }
 
-        public static List<ResponseObject> ToResponse(this IEnumerable<Entity> domainList)
+        public static List<TechnologyResponseObject> ToResponse(this IEnumerable<Technology> domainList)
         {
             return domainList.Select(domain => domain.ToResponse()).ToList();
         }

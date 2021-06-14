@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using TechRadarApi.V1.Domain;
+using System;
 
 namespace TechRadarApi.V1.Gateways
 {
     public interface IExampleGateway
     {
-        Entity GetEntityById(int id);
+        Technology GetEntityById(Guid id);
 
-        List<Entity> GetAll();
+        List<Technology> GetAll();
     }
 }

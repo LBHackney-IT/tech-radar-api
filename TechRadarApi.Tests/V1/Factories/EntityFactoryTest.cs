@@ -12,28 +12,30 @@ namespace TechRadarApi.Tests.V1.Factories
     {
         private readonly Fixture _fixture = new Fixture();
 
-        //TODO: add assertions for all the fields being mapped in `EntityFactory.ToDomain()`. Also be sure to add test cases for
-        // any edge cases that might exist.
         [Test]
         public void CanMapADatabaseEntityToADomainObject()
         {
-            var databaseEntity = _fixture.Create<DatabaseEntity>();
+            var databaseEntity = _fixture.Create<TechnologyDbEntity>();
             var entity = databaseEntity.ToDomain();
 
             databaseEntity.Id.Should().Be(entity.Id);
-            databaseEntity.CreatedAt.Should().BeSameDateAs(entity.CreatedAt);
+            databaseEntity.Name.Should().Be(entity.Name);
+            databaseEntity.Description.Should().Be(entity.Description);
+            databaseEntity.Category.Should().Be(entity.Category);
+            databaseEntity.Technique.Should().Be(entity.Technique);
         }
 
-        //TODO: add assertions for all the fields being mapped in `EntityFactory.ToDatabase()`. Also be sure to add test cases for
-        // any edge cases that might exist.
         [Test]
         public void CanMapADomainEntityToADatabaseObject()
         {
-            var entity = _fixture.Create<Entity>();
+            var entity = _fixture.Create<Technology>();
             var databaseEntity = entity.ToDatabase();
 
             entity.Id.Should().Be(databaseEntity.Id);
-            entity.CreatedAt.Should().BeSameDateAs(databaseEntity.CreatedAt);
+            entity.Name.Should().Be(databaseEntity.Name);
+            entity.Description.Should().Be(databaseEntity.Description);
+            entity.Category.Should().Be(databaseEntity.Category);
+            entity.Technique.Should().Be(databaseEntity.Technique);
         }
     }
 }

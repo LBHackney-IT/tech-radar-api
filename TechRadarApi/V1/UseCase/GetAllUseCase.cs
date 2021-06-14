@@ -14,9 +14,9 @@ namespace TechRadarApi.V1.UseCase
             _gateway = gateway;
         }
 
-        public ResponseObjectList Execute()
+        public TechnologyResponseObjectList Execute()
         {
-            return new ResponseObjectList { ResponseObjects = _gateway.GetAll().ToResponse() };
+            return new TechnologyResponseObjectList { Technologies = _gateway.GetAll().ToResponse() };
         }
     }
 }

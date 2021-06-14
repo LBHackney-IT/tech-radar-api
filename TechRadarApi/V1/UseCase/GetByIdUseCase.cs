@@ -2,6 +2,7 @@ using TechRadarApi.V1.Boundary.Response;
 using TechRadarApi.V1.Factories;
 using TechRadarApi.V1.Gateways;
 using TechRadarApi.V1.UseCase.Interfaces;
+using System;
 
 namespace TechRadarApi.V1.UseCase
 {
@@ -13,9 +14,7 @@ namespace TechRadarApi.V1.UseCase
         {
             _gateway = gateway;
         }
-
-        //TODO: rename id to the name of the identifier that will be used for this API, the type may also need to change
-        public ResponseObject Execute(int id)
+        public TechnologyResponseObject Execute(Guid id)
         {
             return _gateway.GetEntityById(id).ToResponse();
         }

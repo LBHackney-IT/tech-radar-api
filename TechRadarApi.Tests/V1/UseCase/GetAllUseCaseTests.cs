@@ -28,10 +28,10 @@ namespace TechRadarApi.Tests.V1.UseCase
         [Test]
         public void GetsAllFromTheGateway()
         {
-            var stubbedEntities = _fixture.CreateMany<Entity>().ToList();
+            var stubbedEntities = _fixture.CreateMany<Technology>().ToList();
             _mockGateway.Setup(x => x.GetAll()).Returns(stubbedEntities);
 
-            var expectedResponse = new ResponseObjectList { ResponseObjects = stubbedEntities.ToResponse() };
+            var expectedResponse = new TechnologyResponseObjectList { Technologies = stubbedEntities.ToResponse() };
 
             _classUnderTest.Execute().Should().BeEquivalentTo(expectedResponse);
         }

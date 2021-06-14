@@ -4,6 +4,6 @@ namespace TechRadarApi.V1.UseCase.Interfaces
 {
     public interface IGetAllUseCase
     {
-        ResponseObjectList Execute();
+        TechnologyResponseObjectList Execute();
     }
 }
