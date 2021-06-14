@@ -17,7 +17,7 @@ namespace TechRadarApi.Tests.V1.Helper
         {
             return new TechnologyDbEntity
             {
-                Id = entity.Id,
+                Id = entity.Id.ToString(),
                 Name = entity.Name,
                 Description = entity.Description,
                 Category = entity.Category,

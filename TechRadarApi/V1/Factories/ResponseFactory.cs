@@ -9,6 +9,7 @@ namespace TechRadarApi.V1.Factories
     {
         public static TechnologyResponseObject ToResponse(this Technology domain)
         {
+            if (domain == null) return null;
             return new TechnologyResponseObject
             {
                 Id = domain.Id,
