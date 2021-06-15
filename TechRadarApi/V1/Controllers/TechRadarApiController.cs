@@ -30,9 +30,9 @@ namespace TechRadarApi.V1.Controllers
         [ProducesResponseType(typeof(TechnologyResponseObject), StatusCodes.Status200OK)]
         [HttpGet]
         [Route("{id}")]
-        public IActionResult ViewRecord(Guid yourId)
+        public IActionResult ViewTechnology(Guid Id)
         {
-            return Ok(_getByIdUseCase.Execute(yourId));
+            return Ok(_getByIdUseCase.Execute(Id));
         }
     }
 }
