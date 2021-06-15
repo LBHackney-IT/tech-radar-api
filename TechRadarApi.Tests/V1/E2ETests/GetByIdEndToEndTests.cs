@@ -15,6 +15,8 @@ namespace TechRadarApi.Tests.V1.E2ETests
     [TestFixture]
     public class GetByIDEndToEndTests : EndToEndTestsBase
     {
+        private readonly Fixture _fixture = new Fixture();
+
         private Technology ConstructTestEntity()
         {
             var entity = _fixture.Create<Technology>();

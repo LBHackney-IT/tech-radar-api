@@ -17,6 +17,8 @@ namespace TechRadarApi.Tests.V1.E2ETests
     [TestFixture]
     public class GetAllEndToEndTests : EndToEndTestsBase
     {
+        private readonly Fixture _fixture = new Fixture();
+
         private TechnologyList ConstructTestEntities()
         {
             var entities = new TechnologyList() { Technologies = _fixture.CreateMany<Technology>().ToList() };
@@ -26,7 +28,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
         private async void SetupTestData(TechnologyList entities)
         {
             var tasks = entities.Technologies.Select(entity => SaveTestData(entity));
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         [Test]

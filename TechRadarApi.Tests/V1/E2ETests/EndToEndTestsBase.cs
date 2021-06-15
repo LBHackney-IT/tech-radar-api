@@ -20,8 +20,6 @@ namespace TechRadarApi.Tests.V1.E2ETests
 
     public class EndToEndTestsBase : DynamoDbIntegrationTests<Startup>
     {
-        protected readonly Fixture _fixture = new Fixture();
-
         protected async Task SaveTestData(Technology entity)
         {
             await DynamoDbContext.SaveAsync(entity.ToDatabase()).ConfigureAwait(false);
