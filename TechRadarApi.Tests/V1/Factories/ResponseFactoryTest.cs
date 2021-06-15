@@ -10,9 +10,13 @@ namespace TechRadarApi.Tests.V1.Factories
         [Test]
         public void CanMapAnEntityToAResponseObject()
         {
+            // Arrange
             var entity = new Technology();
+
+            // Act
             var response = entity.ToResponse();
 
+            // Assert
             response.Id.Should().Be(entity.Id);
             response.Name.Should().Be(entity.Name);
             response.Description.Should().Be(entity.Description);

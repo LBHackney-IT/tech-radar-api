@@ -15,46 +15,51 @@ namespace TechRadarApi.Tests.V1.Gateways
     //TODO: Rename Tests to match gateway name
     //For instruction on how to run tests please see the wiki: https://github.com/LBHackney-IT/lbh-tech-radar-api/wiki/Running-the-test-suite.
     [TestFixture]
-    public class DynamoDbGatewayTests
+    public class TechnologyGatewayTests
     {
         private readonly Fixture _fixture = new Fixture();
         private Mock<IDynamoDBContext> _dynamoDb;
-        private DynamoDbGateway _classUnderTest;
+        private TechnologyGateway _classUnderTest;
 
         [SetUp]
         public void Setup()
         {
             _dynamoDb = new Mock<IDynamoDBContext>();
-            _classUnderTest = new DynamoDbGateway(_dynamoDb.Object);
+            _classUnderTest = new TechnologyGateway(_dynamoDb.Object);
         }
 
         [Test]
-        public void GetEntityByIdReturnsNullIfEntityDoesntExist()
+        public void GetTechnologyByIdReturnsNullIfTechnologyDoesntExist()
         {
+            // Assert
             var id = Guid.NewGuid();
-            var response = _classUnderTest.GetEntityById(id);
-
+            // Act
+            var response = _classUnderTest.GetTechnologyById(id);
+            // Assert
             response.Should().BeNull();
         }
 
         [Test]
-        public void GetEntityByIdReturnsTheEntityIfItExists()
+        public void GetTechnologyByIdReturnsTheTechnologyIfItExists()
         {
+            // Arrange
             var entity = _fixture.Create<Technology>();
             var dbEntity = DatabaseEntityHelper.CreateDatabaseEntityFrom(entity);
 
-            _dynamoDb.Setup(x => x.LoadAsync<TechnologyDbEntity>(entity.Id, default))
+            _dynamoDb.Setup(x => x.LoadAsync<TechnologyDbEntity>(entity.Id.ToString(), default))
                      .ReturnsAsync(dbEntity);
 
-            var response = _classUnderTest.GetEntityById(entity.Id);
+            // Act
+            var response = _classUnderTest.GetTechnologyById(entity.Id);
 
-            _dynamoDb.Verify(x => x.LoadAsync<TechnologyDbEntity>(entity.Id, default), Times.Once);
+            // Assert
+            _dynamoDb.Verify(x => x.LoadAsync<TechnologyDbEntity>(entity.Id.ToString(), default), Times.Once);
 
-            entity.Id.Should().Be(response.Id);
-            entity.Name.Should().Be(response.Name);
-            entity.Description.Should().Be(response.Description);
-            entity.Category.Should().Be(response.Category);
-            entity.Technique.Should().Be(response.Technique);
+            response.Id.Should().Be(entity.Id.ToString());
+            response.Name.Should().Be(entity.Name);
+            response.Description.Should().Be(entity.Description);
+            response.Category.Should().Be(entity.Category);
+            response.Technique.Should().Be(entity.Technique);
         }
     }
 }

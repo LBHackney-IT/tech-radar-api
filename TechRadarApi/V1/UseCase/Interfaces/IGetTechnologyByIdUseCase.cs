@@ -3,7 +3,7 @@ using System;
 
 namespace TechRadarApi.V1.UseCase.Interfaces
 {
-    public interface IGetByIdUseCase
+    public interface IGetTechnologyByIdUseCase
     {
         TechnologyResponseObject Execute(Guid id);
     }

@@ -13,27 +13,29 @@ namespace TechRadarApi.Tests.V1.UseCase
 {
     public class GetAllUseCaseTests
     {
-        private Mock<IExampleGateway> _mockGateway;
-        private GetAllUseCase _classUnderTest;
+        private Mock<ITechnologyGateway> _mockGateway;
+        private GetAllTechnologiesUseCase _classUnderTest;
         private Fixture _fixture;
 
         [SetUp]
         public void SetUp()
         {
-            _mockGateway = new Mock<IExampleGateway>();
-            _classUnderTest = new GetAllUseCase(_mockGateway.Object);
+            _mockGateway = new Mock<ITechnologyGateway>();
+            _classUnderTest = new GetAllTechnologiesUseCase(_mockGateway.Object);
             _fixture = new Fixture();
         }
 
         [Test]
         public void GetsAllFromTheGateway()
         {
+            // Arrange
             var stubbedEntities = _fixture.CreateMany<Technology>().ToList();
             _mockGateway.Setup(x => x.GetAll()).Returns(stubbedEntities);
-
             var expectedResponse = new TechnologyResponseObjectList { Technologies = stubbedEntities.ToResponse() };
-
-            _classUnderTest.Execute().Should().BeEquivalentTo(expectedResponse);
+            // Act
+            var actualResponse = _classUnderTest.Execute();
+            // Assert
+            actualResponse.Should().BeEquivalentTo(expectedResponse);
         }
 
         //TODO: Add extra tests here for extra functionality added to the use case

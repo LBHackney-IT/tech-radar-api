@@ -16,29 +16,37 @@ namespace TechRadarApi.Tests.V1.Factories
         [Test]
         public void CanMapADatabaseEntityToADomainObject()
         {
+            // Arrange
             var databaseEntity = _fixture.Build<TechnologyDbEntity>()
                 .With(technology => technology.Id, Guid.NewGuid().ToString())
                 .Create();
+
+            // Act    
             var entity = databaseEntity.ToDomain();
 
-            databaseEntity.Id.Should().Be(entity.Id.ToString());
-            databaseEntity.Name.Should().Be(entity.Name);
-            databaseEntity.Description.Should().Be(entity.Description);
-            databaseEntity.Category.Should().Be(entity.Category);
-            databaseEntity.Technique.Should().Be(entity.Technique);
-        }
-
-        [Test]
-        public void CanMapADomainEntityToADatabaseObject()
-        {
-            var entity = _fixture.Create<Technology>();
-            var databaseEntity = entity.ToDatabase();
-
+            //Assert
             entity.Id.Should().Be(Guid.Parse(databaseEntity.Id));
             entity.Name.Should().Be(databaseEntity.Name);
             entity.Description.Should().Be(databaseEntity.Description);
             entity.Category.Should().Be(databaseEntity.Category);
             entity.Technique.Should().Be(databaseEntity.Technique);
+        }
+
+        [Test]
+        public void CanMapADomainEntityToADatabaseObject()
+        {
+            // Arrange
+            var entity = _fixture.Create<Technology>();
+            
+            // Act
+            var databaseEntity = entity.ToDatabase();
+
+            // Assert
+            databaseEntity.Id.Should().Be(entity.Id.ToString());
+            databaseEntity.Name.Should().Be(entity.Name);
+            databaseEntity.Description.Should().Be(entity.Description);
+            databaseEntity.Category.Should().Be(entity.Category);
+            databaseEntity.Technique.Should().Be(entity.Technique);
         }
     }
 }

@@ -4,16 +4,14 @@ using TechRadarApi.V1.Factories;
 using TechRadarApi.V1.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-
 
 namespace TechRadarApi.V1.Gateways
 {
-    public class DynamoDbGateway : IExampleGateway
+    public class TechnologyGateway : ITechnologyGateway
     {
         private readonly IDynamoDBContext _dynamoDbContext;
 
-        public DynamoDbGateway(IDynamoDBContext dynamoDbContext)
+        public TechnologyGateway(IDynamoDBContext dynamoDbContext)
         {
             _dynamoDbContext = dynamoDbContext;
         }
@@ -28,7 +26,7 @@ namespace TechRadarApi.V1.Gateways
             return response;
         }
 
-        public Technology GetEntityById(Guid id)
+        public Technology GetTechnologyById(Guid id)
         {
             var result = _dynamoDbContext.LoadAsync<TechnologyDbEntity>(id.ToString()).GetAwaiter().GetResult();
             return result?.ToDomain();

@@ -5,11 +5,10 @@ using TechRadarApi.V1.UseCase.Interfaces;
 
 namespace TechRadarApi.V1.UseCase
 {
-    //TODO: Rename class name and interface name to reflect the entity they are representing eg. GetAllClaimantsUseCase
-    public class GetAllUseCase : IGetAllUseCase
+    public class GetAllTechnologiesUseCase : IGetAllTechnologiesUseCase
     {
-        private readonly IExampleGateway _gateway;
-        public GetAllUseCase(IExampleGateway gateway)
+        private readonly ITechnologyGateway _gateway;
+        public GetAllTechnologiesUseCase(ITechnologyGateway gateway)
         {
             _gateway = gateway;
         }

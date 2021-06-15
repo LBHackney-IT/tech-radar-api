@@ -140,13 +140,13 @@ namespace TechRadarApi
 
         private static void RegisterGateways(IServiceCollection services)
         {
-            services.AddScoped<IExampleGateway, DynamoDbGateway>();
+            services.AddScoped<ITechnologyGateway, TechnologyGateway>();
         }
 
         private static void RegisterUseCases(IServiceCollection services)
         {
-            services.AddScoped<IGetAllUseCase, GetAllUseCase>();
-            services.AddScoped<IGetByIdUseCase, GetByIdUseCase>();
+            services.AddScoped<IGetAllTechnologiesUseCase, GetAllTechnologiesUseCase>();
+            services.AddScoped<IGetTechnologyByIdUseCase, GetTechnologyByIdUseCase>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

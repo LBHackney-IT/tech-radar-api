@@ -4,9 +4,9 @@ using System;
 
 namespace TechRadarApi.V1.Gateways
 {
-    public interface IExampleGateway
+    public interface ITechnologyGateway
     {
-        Technology GetEntityById(Guid id);
+        Technology GetTechnologyById(Guid id);
 
         List<Technology> GetAll();
     }

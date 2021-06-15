@@ -12,9 +12,9 @@ namespace TechRadarApi.V1.Controllers
     [ApiVersion("1.0")]
     public class TechRadarApiController : BaseController
     {
-        private readonly IGetAllUseCase _getAllUseCase;
-        private readonly IGetByIdUseCase _getByIdUseCase;
-        public TechRadarApiController(IGetAllUseCase getAllUseCase, IGetByIdUseCase getByIdUseCase)
+        private readonly IGetAllTechnologiesUseCase _getAllUseCase;
+        private readonly IGetTechnologyByIdUseCase _getByIdUseCase;
+        public TechRadarApiController(IGetAllTechnologiesUseCase getAllUseCase, IGetTechnologyByIdUseCase getByIdUseCase)
         {
             _getAllUseCase = getAllUseCase;
             _getByIdUseCase = getByIdUseCase;
