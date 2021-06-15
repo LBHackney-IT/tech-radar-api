@@ -37,7 +37,7 @@ namespace TechRadarApi.Tests.V1.Factories
         {
             // Arrange
             var entity = _fixture.Create<Technology>();
-            
+
             // Act
             var databaseEntity = entity.ToDatabase();
 

@@ -4,6 +4,8 @@ using TechRadarApi.V1.Factories;
 using TechRadarApi.V1.Infrastructure;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+
 
 namespace TechRadarApi.V1.Gateways
 {
@@ -19,11 +21,8 @@ namespace TechRadarApi.V1.Gateways
         public List<Technology> GetAll()
         {
             var conditions = new List<ScanCondition>();
-            var result = _dynamoDbContext.ScanAsync<TechnologyDbEntity>(conditions).GetRemainingAsync().GetAwaiter().GetResult();
-
-            var response = new List<Technology>();
-            result.ForEach(delegate (TechnologyDbEntity technology) { response.Add(technology?.ToDomain()); });
-            return response;
+            var results = _dynamoDbContext.ScanAsync<TechnologyDbEntity>(conditions).GetRemainingAsync().GetAwaiter().GetResult();
+            return results.Select(x => x.ToDomain()).ToList();
         }
 
         public Technology GetTechnologyById(Guid id)

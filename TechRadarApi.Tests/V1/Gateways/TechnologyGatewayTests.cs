@@ -1,5 +1,6 @@
 using Amazon.DynamoDBv2.DataModel;
 using AutoFixture;
+using System.Linq;
 using TechRadarApi.Tests.V1.Helper;
 using TechRadarApi.V1.Domain;
 using TechRadarApi.V1.Gateways;
@@ -8,6 +9,7 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 
 namespace TechRadarApi.Tests.V1.Gateways
 {
@@ -60,6 +62,41 @@ namespace TechRadarApi.Tests.V1.Gateways
             response.Description.Should().Be(entity.Description);
             response.Category.Should().Be(entity.Category);
             response.Technique.Should().Be(entity.Technique);
+        }
+
+        [Test]
+        [Ignore("Getting a bug - can't stub the DB response")]
+        public void GetAllTechnologiesReturnsEmptyArrayIfNoTechnologiesExist()
+        {
+            // Arrange
+            List<ScanCondition> conditions = new List<ScanCondition>();
+            var stubbedResponse = new List<TechnologyDbEntity>();
+
+            _dynamoDb.Setup(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default))
+                    .ReturnsAsync(stubbedResponse);
+            // Act
+            var response = _classUnderTest.GetAll();
+            // Assert
+            _dynamoDb.Verify(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default), Times.Once);
+            response.Should().BeEmpty();
+        }
+
+        [Test]
+        [Ignore("Getting a bug - can't stub the DB response")]
+        public void GetAllTechnologiesReturnsAnArrayOfAllTechnologiesInTheTable()
+        {
+            // Arrange
+            var entities = _fixture.CreateMany<Technology>().ToList();
+            var stubbedResponse = entities.Select(x => DatabaseEntityHelper.CreateDatabaseEntityFrom(x)).ToList();
+
+            List<ScanCondition> conditions = new List<ScanCondition>();
+            _dynamoDb.Setup(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default))
+                    .ReturnsAsync(stubbedResponse);
+            // Act
+            var response = _classUnderTest.GetAll();
+            // Assert
+            _dynamoDb.Verify(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default), Times.Once);
+            response.Should().BeEquivalentTo(entities);
         }
     }
 }

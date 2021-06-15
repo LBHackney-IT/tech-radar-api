@@ -18,7 +18,7 @@ namespace TechRadarApi.Tests.V1.Domain
             var description = "C# is the language that most of our projects at Hackney are written in, using the .Net framework.";
             var category = "Languages and Frameworks";
             var technique = "Adopt";
-            
+
             // Act
             technology.Name = name;
             technology.Description = description;
