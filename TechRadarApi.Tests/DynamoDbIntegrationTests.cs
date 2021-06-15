@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using Amazon.XRay.Recorder.Core;
 
 namespace TechRadarApi.Tests
 {
@@ -42,6 +43,7 @@ namespace TechRadarApi.Tests
         [SetUp]
         public void BaseSetup()
         {
+            AWSXRayRecorder.Instance.BeginSegment("Test"); 
             Client = _factory.CreateClient();
             CleanupActions = new List<Action>();
         }
@@ -51,6 +53,7 @@ namespace TechRadarApi.Tests
         {
             foreach (var act in CleanupActions)
                 act();
+            AWSXRayRecorder.Instance.EndSegment();
             Client.Dispose();
         }
     }
