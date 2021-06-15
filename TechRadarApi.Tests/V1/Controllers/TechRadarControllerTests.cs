@@ -7,6 +7,8 @@ using NUnit.Framework;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using System;
+using System.Collections.Generic;
 
 namespace TechRadarApi.Tests.V1.Controllers
 {
@@ -26,7 +28,7 @@ namespace TechRadarApi.Tests.V1.Controllers
         }
 
         [Test]
-        public void GetTechnologyWithIDReturnsOKResponse()
+        public void GetTechnologyWithValidIDReturnsOKResponse()
         {
             // Arrange
             var expectedResponse = _fixture.Create<TechnologyResponseObject>();
@@ -39,6 +41,17 @@ namespace TechRadarApi.Tests.V1.Controllers
             actualResponse.Should().NotBeNull();
             actualResponse.StatusCode.Should().Be(200);
             actualResponse.Value.Should().BeEquivalentTo(expectedResponse);
+        }
+
+        [Test]
+        public void GetTechnologyWithNonExistentIDReturnsNotFoundResponse()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            // Act
+            var response = _classUnderTest.ViewTechnology(id) as NotFoundObjectResult;
+            // Assert
+            response.StatusCode.Should().Be(404);
         }
 
         [Test]
@@ -57,5 +70,18 @@ namespace TechRadarApi.Tests.V1.Controllers
             actualResponse.Value.Should().BeEquivalentTo(expectedResponse);
         }
 
+        [Test]
+        public void GetAllTechnologiesReturnsNoContentResponseWhenTheTableIsEmpty()
+        {
+            // Arrange
+            var emptyResponseObject = new TechnologyResponseObjectList() { Technologies = new List<TechnologyResponseObject>() };
+            _mockGetAllUsecase.Setup(x => x.Execute()).Returns(emptyResponseObject);
+
+            // Act
+            var response = _classUnderTest.ListTechnologies() as NoContentResult;
+
+            // Assert
+            response.StatusCode.Should().Be(204);
+        }
     }
 }

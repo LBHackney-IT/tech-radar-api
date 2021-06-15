@@ -21,18 +21,24 @@ namespace TechRadarApi.V1.Controllers
         }
 
         [ProducesResponseType(typeof(TechnologyResponseObjectList), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet]
         public IActionResult ListTechnologies()
         {
-            return Ok(_getAllUseCase.Execute());
+            var result = _getAllUseCase.Execute();
+            if (result.Technologies.Count == 0) return NoContent();
+            return Ok(result);
         }
 
         [ProducesResponseType(typeof(TechnologyResponseObject), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [HttpGet]
         [Route("{id}")]
         public IActionResult ViewTechnology(Guid Id)
         {
-            return Ok(_getByIdUseCase.Execute(Id));
+            var result = _getByIdUseCase.Execute(Id);
+            if (result == null) return NotFound(Id);
+            return Ok(result);
         }
     }
 }
