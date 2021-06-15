@@ -43,7 +43,7 @@ namespace TechRadarApi.Tests
         [SetUp]
         public void BaseSetup()
         {
-            AWSXRayRecorder.Instance.BeginSegment("Test"); 
+            AWSXRayRecorder.Instance.BeginSegment("Test");
             Client = _factory.CreateClient();
             CleanupActions = new List<Action>();
         }
