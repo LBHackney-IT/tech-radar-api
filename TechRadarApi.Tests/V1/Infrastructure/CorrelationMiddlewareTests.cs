@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using TechRadarApi.V1.Controllers;
-using TechRadarApi.V1.Infrastructure;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using NUnit.Framework;

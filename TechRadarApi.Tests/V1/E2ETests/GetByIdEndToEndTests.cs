@@ -1,7 +1,5 @@
 using AutoFixture;
 using TechRadarApi.V1.Domain;
-using TechRadarApi.V1.Factories;
-using TechRadarApi.V1.Infrastructure;
 using FluentAssertions;
 using Newtonsoft.Json;
 using NUnit.Framework;

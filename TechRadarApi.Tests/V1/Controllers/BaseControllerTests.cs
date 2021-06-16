@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using TechRadarApi.V1.Controllers;
-using TechRadarApi.V1.Infrastructure;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

@@ -1,4 +1,3 @@
-using System;
 using TechRadarApi.V1.Domain;
 using FluentAssertions;
 using NUnit.Framework;

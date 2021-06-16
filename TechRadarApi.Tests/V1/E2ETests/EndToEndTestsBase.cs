@@ -1,14 +1,7 @@
-using AutoFixture;
 using TechRadarApi.V1.Domain;
 using TechRadarApi.V1.Factories;
 using TechRadarApi.V1.Infrastructure;
-using FluentAssertions;
-using Newtonsoft.Json;
-using NUnit.Framework;
-using System;
-using System.Net;
 using System.Threading.Tasks;
-using System.Linq;
 using System.Collections.Generic;
 
 namespace TechRadarApi.Tests.V1.E2ETests

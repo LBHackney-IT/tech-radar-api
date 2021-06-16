@@ -1,4 +1,5 @@
 using Amazon.DynamoDBv2.DataModel;
+
 namespace TechRadarApi.V1.Infrastructure
 {
 
