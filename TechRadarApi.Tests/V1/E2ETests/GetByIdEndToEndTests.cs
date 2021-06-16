@@ -59,7 +59,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
             var id = Guid.NewGuid();
             var uri = new Uri($"api/v1/technologies/{id}", UriKind.Relative);
             // Act
-            var response = await Client.GetAsync(uri).ConfigureAwait(false);            
+            var response = await Client.GetAsync(uri).ConfigureAwait(false);
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
