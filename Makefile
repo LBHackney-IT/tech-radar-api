@@ -4,19 +4,19 @@ setup:
 
 .PHONY: build
 build:
-	docker-compose build base-api
+	docker-compose build tech-radar-api
 
 .PHONY: serve
 serve:
-	docker-compose build base-api && docker-compose up base-api
+	docker-compose build tech-radar-api && docker-compose up tech-radar-api
 
 .PHONY: shell
 shell:
-	docker-compose run base-api bash
+	docker-compose run tech-radar-api bash
 
 .PHONY: test
 test:
-	docker-compose up test-database & docker-compose build base-api-test && docker-compose up base-api-test
+	docker-compose up test-database & docker-compose build tech-radar-api-test && docker-compose up tech-radar-api-test
 
 .PHONY: lint
 lint:
