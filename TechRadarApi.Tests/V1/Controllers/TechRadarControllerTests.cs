@@ -49,10 +49,25 @@ namespace TechRadarApi.Tests.V1.Controllers
         {
             // Arrange
             var id = Guid.NewGuid();
+            _mockGetByIdUsecase.Setup(x => x.Execute(id)).ReturnsAsync((TechnologyResponseObject) null);
             // Act
             var response = await _classUnderTest.ViewTechnology(id).ConfigureAwait(false) as NotFoundObjectResult;
             // Assert
             response.StatusCode.Should().Be(404);
+        }
+
+        [Test]
+        public void GetTechnologyByIdExceptionIsThrown()
+        {
+            // Arrange
+            var id = Guid.NewGuid();
+            var exception = new ApplicationException("Test exception");
+            _mockGetByIdUsecase.Setup(x => x.Execute(id)).ThrowsAsync(exception);
+            // Act
+            Func<Task<IActionResult>> func = async () => await _classUnderTest.ViewTechnology(id).ConfigureAwait(false);
+
+            // Assert
+            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
         }
 
         [Test]
@@ -72,17 +87,30 @@ namespace TechRadarApi.Tests.V1.Controllers
         }
 
         [Test]
-        public async Task GetAllTechnologiesReturnsNoContentResponseWhenTheTableIsEmpty()
+        public async Task GetAllTechnologiesReturnsOKResponseWhenTheTableIsEmpty()
         {
             // Arrange
             var emptyResponseObject = new TechnologyResponseObjectList() { Technologies = new List<TechnologyResponseObject>() };
             _mockGetAllUsecase.Setup(x => x.Execute()).ReturnsAsync(emptyResponseObject);
 
             // Act
-            var response = await _classUnderTest.ListTechnologies().ConfigureAwait(false) as NoContentResult;
+            var response = await _classUnderTest.ListTechnologies().ConfigureAwait(false) as OkObjectResult;
 
             // Assert
-            response.StatusCode.Should().Be(204);
+            response.StatusCode.Should().Be(200);
+        }
+
+        [Test]
+        public void GetAllTechnologiesExceptionIsThrown()
+        {
+            // Arrange
+            var exception = new ApplicationException("Test exception");
+            _mockGetAllUsecase.Setup(x => x.Execute()).ThrowsAsync(exception);
+            // Act
+            Func<Task<IActionResult>> func = async () => await _classUnderTest.ListTechnologies().ConfigureAwait(false);
+
+            // Assert
+            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
         }
     }
 }

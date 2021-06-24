@@ -43,7 +43,8 @@ namespace TechRadarApi.Tests.V1.E2ETests
         public async Task GetTechnologyByInvalidIdReturnsBadRequestResponse()
         {
             // Arrange
-            var uri = new Uri($"api/v1/technologies/1", UriKind.Relative);
+            var badId = _fixture.Create<int>(); // wrong type, should be a guid
+            var uri = new Uri($"api/v1/technologies/{badId}", UriKind.Relative);
             // Act
             var response = await Client.GetAsync(uri).ConfigureAwait(false);
             // Assert

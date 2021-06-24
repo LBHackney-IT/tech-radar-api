@@ -9,6 +9,8 @@ using FluentAssertions;
 using Moq;
 using NUnit.Framework;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System;
 
 namespace TechRadarApi.Tests.V1.UseCase
 {
@@ -39,6 +41,29 @@ namespace TechRadarApi.Tests.V1.UseCase
             actualResponse.Should().BeEquivalentTo(expectedResponse);
         }
 
-        //TODO: Add extra tests here for extra functionality added to the use case
+        [Test]
+        public async Task ReturnsEmptyResponseObjectListIfNoTechnologies()
+        {
+            // Arrange
+            var stubbedEntities = new List<Technology>();
+            _mockGateway.Setup(x => x.GetAll()).ReturnsAsync(stubbedEntities);
+            var expectedResponse = new TechnologyResponseObjectList { Technologies = new List<TechnologyResponseObject>() };
+            // Act
+            var actualResponse = await _classUnderTest.Execute().ConfigureAwait(false);
+            // Assert
+            actualResponse.Should().BeEquivalentTo(expectedResponse);
+        }
+
+        [Test]
+        public void GetAllTechnologiesExceptionIsThrown()
+        {
+            // Assert
+            var exception = new ApplicationException("Test Exception");
+            _mockGateway.Setup(x => x.GetAll()).ThrowsAsync(exception);
+            // Act
+            Func<Task<TechnologyResponseObjectList>> func = async () => await _classUnderTest.Execute().ConfigureAwait(false);
+            // Assert
+            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
+        }
     }
 }

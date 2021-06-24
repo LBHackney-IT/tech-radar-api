@@ -23,16 +23,16 @@ namespace TechRadarApi.V1.Controllers
 
         [ProducesResponseType(typeof(TechnologyResponseObjectList), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> ListTechnologies()
         {
             var result = await _getAllUseCase.Execute().ConfigureAwait(false);
-            if (result.Technologies.Count == 0) return NoContent();
             return Ok(result);
         }
 
         [ProducesResponseType(typeof(TechnologyResponseObject), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         [Route("{id}")]
         public async Task<IActionResult> ViewTechnology(Guid Id)

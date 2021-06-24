@@ -47,14 +47,14 @@ namespace TechRadarApi.Tests.V1.E2ETests
         }
 
         [Test]
-        public async Task GetAllTechnologiesReturnsNoContentResponseWhenTheTableIsEmpty()
+        public async Task GetAllTechnologiesReturnsOKResponseWhenTheTableIsEmpty()
         {
             // Arrange
             var uri = new Uri($"api/v1/technologies", UriKind.Relative);
             // Act
             var response = await Client.GetAsync(uri).ConfigureAwait(false);
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
         }
     }
 }

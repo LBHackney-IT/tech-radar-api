@@ -55,11 +55,22 @@ namespace TechRadarApi.Tests.V1.Gateways
             // Assert
             _dynamoDb.Verify(x => x.LoadAsync<TechnologyDbEntity>(entity.Id.ToString(), default), Times.Once);
 
-            response.Id.Should().Be(entity.Id.ToString());
-            response.Name.Should().Be(entity.Name);
-            response.Description.Should().Be(entity.Description);
-            response.Category.Should().Be(entity.Category);
-            response.Technique.Should().Be(entity.Technique);
+            response.Should().BeEquivalentTo(entity);
+        }
+
+        [Test]
+        public void GetTechologyByIdExceptionIsThrown()
+        {
+            // Assert
+            var id = Guid.NewGuid();
+            var exception = new ApplicationException("Test Exception");
+            _dynamoDb.Setup(x => x.LoadAsync<TechnologyDbEntity>(id.ToString(), default))
+                     .ThrowsAsync(exception);
+            // Act
+            Func<Task<Technology>> func = async () => await _classUnderTest.GetTechnologyById(id).ConfigureAwait(false);
+            // Assert
+            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
+            _dynamoDb.Verify(x => x.LoadAsync<TechnologyDbEntity>(id.ToString(), default), Times.Once);
         }
 
         [Test]
@@ -95,6 +106,23 @@ namespace TechRadarApi.Tests.V1.Gateways
             // Assert
             _dynamoDb.Verify(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default), Times.Once);
             response.Should().BeEquivalentTo(entities);
+        }
+
+        [Test]
+        [Ignore("Getting a bug - can't stub the DB response")]
+
+        public void GetAllTechologiesExceptionIsThrown()
+        {
+            // Assert
+            var exception = new ApplicationException("Test Exception");
+            List<ScanCondition> conditions = new List<ScanCondition>();
+            _dynamoDb.Setup(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default))
+                     .ThrowsAsync(exception);
+            // Act
+            Func<Task<List<Technology>>> func = async () => await _classUnderTest.GetAll().ConfigureAwait(false);
+            // Assert
+            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
+            _dynamoDb.Verify(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default), Times.Once);
         }
     }
 }
