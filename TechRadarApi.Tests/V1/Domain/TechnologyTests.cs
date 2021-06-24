@@ -1,14 +1,12 @@
 using TechRadarApi.V1.Domain;
 using FluentAssertions;
-using NUnit.Framework;
+using Xunit;
 
 namespace TechRadarApi.Tests.V1.Domain
 {
-    [TestFixture]
     public class TechnologyTests
     {
-
-        [Test]
+        [Fact]
         public void TechnologiesHavePropertiesSet()
         {
             // Arrange

@@ -7,7 +7,7 @@ using TechRadarApi.V1.Gateways;
 using TechRadarApi.V1.UseCase;
 using FluentAssertions;
 using Moq;
-using NUnit.Framework;
+using Xunit;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
@@ -20,15 +20,14 @@ namespace TechRadarApi.Tests.V1.UseCase
         private GetAllTechnologiesUseCase _classUnderTest;
         private Fixture _fixture;
 
-        [SetUp]
-        public void SetUp()
+        public GetAllUseCaseTests()
         {
             _mockGateway = new Mock<ITechnologyGateway>();
             _classUnderTest = new GetAllTechnologiesUseCase(_mockGateway.Object);
             _fixture = new Fixture();
         }
 
-        [Test]
+        [Fact]
         public async Task GetsAllFromTheGateway()
         {
             // Arrange
@@ -41,7 +40,7 @@ namespace TechRadarApi.Tests.V1.UseCase
             actualResponse.Should().BeEquivalentTo(expectedResponse);
         }
 
-        [Test]
+        [Fact]
         public async Task ReturnsEmptyResponseObjectListIfNoTechnologies()
         {
             // Arrange
@@ -54,7 +53,7 @@ namespace TechRadarApi.Tests.V1.UseCase
             actualResponse.Should().BeEquivalentTo(expectedResponse);
         }
 
-        [Test]
+        [Fact]
         public void GetAllTechnologiesExceptionIsThrown()
         {
             // Assert

@@ -1,13 +1,13 @@
 using TechRadarApi.V1.Domain;
 using TechRadarApi.V1.Factories;
-using NUnit.Framework;
+using Xunit;
 using FluentAssertions;
 
 namespace TechRadarApi.Tests.V1.Factories
 {
     public class ResponseFactoryTest
     {
-        [Test]
+        [Fact]
         public void CanMapAnEntityToAResponseObject()
         {
             // Arrange

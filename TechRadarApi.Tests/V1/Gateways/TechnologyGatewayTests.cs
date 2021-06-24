@@ -7,28 +7,26 @@ using TechRadarApi.V1.Gateways;
 using TechRadarApi.V1.Infrastructure;
 using FluentAssertions;
 using Moq;
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace TechRadarApi.Tests.V1.Gateways
 {
-    [TestFixture]
     public class TechnologyGatewayTests
     {
         private readonly Fixture _fixture = new Fixture();
         private Mock<IDynamoDBContext> _dynamoDb;
         private TechnologyGateway _classUnderTest;
 
-        [SetUp]
-        public void Setup()
+        public TechnologyGatewayTests()
         {
             _dynamoDb = new Mock<IDynamoDBContext>();
             _classUnderTest = new TechnologyGateway(_dynamoDb.Object);
         }
 
-        [Test]
+        [Fact]
         public async Task GetTechnologyByIdReturnsNullIfTechnologyDoesntExist()
         {
             // Assert
@@ -39,7 +37,7 @@ namespace TechRadarApi.Tests.V1.Gateways
             response.Should().BeNull();
         }
 
-        [Test]
+        [Fact]
         public async Task GetTechnologyByIdReturnsTheTechnologyIfItExists()
         {
             // Arrange
@@ -58,7 +56,7 @@ namespace TechRadarApi.Tests.V1.Gateways
             response.Should().BeEquivalentTo(entity);
         }
 
-        [Test]
+        [Fact]
         public void GetTechologyByIdExceptionIsThrown()
         {
             // Assert
@@ -73,8 +71,7 @@ namespace TechRadarApi.Tests.V1.Gateways
             _dynamoDb.Verify(x => x.LoadAsync<TechnologyDbEntity>(id.ToString(), default), Times.Once);
         }
 
-        [Test]
-        [Ignore("Getting a bug - can't stub the DB response")]
+        [Fact(Skip = "Getting a bug - can't stub the DB response")]
         public async Task GetAllTechnologiesReturnsEmptyArrayIfNoTechnologiesExist()
         {
             // Arrange
@@ -90,8 +87,7 @@ namespace TechRadarApi.Tests.V1.Gateways
             response.Should().BeEmpty();
         }
 
-        [Test]
-        [Ignore("Getting a bug - can't stub the DB response")]
+        [Fact(Skip = "Getting a bug - can't stub the DB response")]
         public async Task GetAllTechnologiesReturnsAnArrayOfAllTechnologiesInTheTable()
         {
             // Arrange
@@ -108,9 +104,7 @@ namespace TechRadarApi.Tests.V1.Gateways
             response.Should().BeEquivalentTo(entities);
         }
 
-        [Test]
-        [Ignore("Getting a bug - can't stub the DB response")]
-
+        [Fact(Skip = "Getting a bug - can't stub the DB response")]
         public void GetAllTechologiesExceptionIsThrown()
         {
             // Assert

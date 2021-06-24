@@ -2,7 +2,7 @@ using TechRadarApi.V1.Gateways;
 using TechRadarApi.V1.UseCase;
 using TechRadarApi.V1.Domain;
 using Moq;
-using NUnit.Framework;
+using Xunit;
 using AutoFixture;
 using FluentAssertions;
 using System.Threading.Tasks;
@@ -18,15 +18,14 @@ namespace TechRadarApi.Tests.V1.UseCase
         private GetTechnologyByIdUseCase _classUnderTest;
         private Fixture _fixture;
 
-        [SetUp]
-        public void SetUp()
+        public GetByIdUseCaseTests()
         {
             _mockGateway = new Mock<ITechnologyGateway>();
             _classUnderTest = new GetTechnologyByIdUseCase(_mockGateway.Object);
             _fixture = new Fixture();
         }
 
-        [Test]
+        [Fact]
         public async Task GetsTechnologyFromGatewayUsingId()
         {
             // Arrange
@@ -39,7 +38,7 @@ namespace TechRadarApi.Tests.V1.UseCase
             response.Should().BeEquivalentTo(expectedResponse);
         }
 
-        [Test]
+        [Fact]
         public async Task ReturnsNullIfIdNotFound()
         {
             // Arrange
@@ -51,7 +50,7 @@ namespace TechRadarApi.Tests.V1.UseCase
             response.Should().BeNull();
         }
 
-        [Test]
+        [Fact]
         public void GetTechnologyByIdExceptionIsThrown()
         {
             // Assert

@@ -3,7 +3,7 @@ using TechRadarApi.V1.UseCase.Interfaces;
 using TechRadarApi.V1.Boundary.Response;
 using AutoFixture;
 using Moq;
-using NUnit.Framework;
+using Xunit;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
@@ -13,22 +13,21 @@ using System.Threading.Tasks;
 
 namespace TechRadarApi.Tests.V1.Controllers
 {
-    [TestFixture]
-    public class TechRadarApiControllerTests
+    public class TechRadarApiControllerFacts
     {
         private readonly TechRadarApiController _classUnderTest;
         private readonly Mock<IGetTechnologyByIdUseCase> _mockGetByIdUsecase;
         private readonly Mock<IGetAllTechnologiesUseCase> _mockGetAllUsecase;
         private readonly Fixture _fixture = new Fixture();
 
-        public TechRadarApiControllerTests()
+        public TechRadarApiControllerFacts()
         {
             _mockGetAllUsecase = new Mock<IGetAllTechnologiesUseCase>();
             _mockGetByIdUsecase = new Mock<IGetTechnologyByIdUseCase>();
             _classUnderTest = new TechRadarApiController(_mockGetAllUsecase.Object, _mockGetByIdUsecase.Object);
         }
 
-        [Test]
+        [Fact]
         public async Task GetTechnologyWithValidIDReturnsOKResponse()
         {
             // Arrange
@@ -44,7 +43,7 @@ namespace TechRadarApi.Tests.V1.Controllers
             actualResponse.Value.Should().BeEquivalentTo(expectedResponse);
         }
 
-        [Test]
+        [Fact]
         public async Task GetTechnologyWithNonExistentIDReturnsNotFoundResponse()
         {
             // Arrange
@@ -56,7 +55,7 @@ namespace TechRadarApi.Tests.V1.Controllers
             response.StatusCode.Should().Be(404);
         }
 
-        [Test]
+        [Fact]
         public void GetTechnologyByIdExceptionIsThrown()
         {
             // Arrange
@@ -70,7 +69,7 @@ namespace TechRadarApi.Tests.V1.Controllers
             func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
         }
 
-        [Test]
+        [Fact]
         public async Task GetAllTechnologiesReturnsOKResponse()
         {
             // Arrange
@@ -86,7 +85,7 @@ namespace TechRadarApi.Tests.V1.Controllers
             actualResponse.Value.Should().BeEquivalentTo(expectedResponse);
         }
 
-        [Test]
+        [Fact]
         public async Task GetAllTechnologiesReturnsOKResponseWhenTheTableIsEmpty()
         {
             // Arrange
@@ -100,7 +99,7 @@ namespace TechRadarApi.Tests.V1.Controllers
             response.StatusCode.Should().Be(200);
         }
 
-        [Test]
+        [Fact]
         public void GetAllTechnologiesExceptionIsThrown()
         {
             // Arrange

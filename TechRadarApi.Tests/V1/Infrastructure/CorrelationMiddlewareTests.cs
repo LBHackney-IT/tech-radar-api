@@ -2,22 +2,19 @@ using System.Threading.Tasks;
 using TechRadarApi.V1.Controllers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
-using NUnit.Framework;
+using Xunit;
 
 namespace TechRadarApi.Tests.V1.Infrastructure
 {
-    [TestFixture]
     public class CorrelationMiddlewareTest
     {
         private CorrelationMiddleware _sut;
-
-        [SetUp]
-        public void Init()
+        public CorrelationMiddlewareTest()
         {
             _sut = new CorrelationMiddleware(null);
         }
 
-        [Test]
+        [Fact]
         public async Task DoesNotReplaceCorrelationIdIfOneExists()
         {
             // Arrange
@@ -33,7 +30,7 @@ namespace TechRadarApi.Tests.V1.Infrastructure
             httpContext.HttpContext.Request.Headers[Constants.CorrelationId].Should().BeEquivalentTo(headerValue);
         }
 
-        [Test]
+        [Fact]
         public async Task AddsCorrelationIdIfOneDoesNotExist()
         {
             // Arrange

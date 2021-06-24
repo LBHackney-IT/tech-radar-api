@@ -3,17 +3,16 @@ using TechRadarApi.V1.Domain;
 using TechRadarApi.V1.Factories;
 using TechRadarApi.V1.Infrastructure;
 using FluentAssertions;
-using NUnit.Framework;
+using Xunit;
 using System;
 
 namespace TechRadarApi.Tests.V1.Factories
 {
-    [TestFixture]
     public class EntityFactoryTest
     {
         private readonly Fixture _fixture = new Fixture();
 
-        [Test]
+        [Fact]
         public void CanMapADatabaseEntityToADomainObject()
         {
             // Arrange
@@ -32,7 +31,7 @@ namespace TechRadarApi.Tests.V1.Factories
             entity.Technique.Should().Be(databaseEntity.Technique);
         }
 
-        [Test]
+        [Fact]
         public void CanMapADomainEntityToADatabaseObject()
         {
             // Arrange
