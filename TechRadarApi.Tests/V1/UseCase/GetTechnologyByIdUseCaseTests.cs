@@ -5,6 +5,7 @@ using Moq;
 using NUnit.Framework;
 using AutoFixture;
 using FluentAssertions;
+using System.Threading.Tasks;
 
 namespace TechRadarApi.Tests.V1.UseCase
 {
@@ -23,13 +24,13 @@ namespace TechRadarApi.Tests.V1.UseCase
         }
 
         [Test]
-        public void GetsTechnologyFromGatewayUsingId()
+        public async Task GetsTechnologyFromGatewayUsingId()
         {
             // Arrange
             var stubbedEntity = _fixture.Create<Technology>();
-            _mockGateway.Setup(x => x.GetTechnologyById(stubbedEntity.Id)).Returns(stubbedEntity);
+            _mockGateway.Setup(x => x.GetTechnologyById(stubbedEntity.Id)).ReturnsAsync(stubbedEntity);
             // Act
-            var response = _classUnderTest.Execute(stubbedEntity.Id);
+            var response = await _classUnderTest.Execute(stubbedEntity.Id).ConfigureAwait(false);
             // Assert
             response.Should().BeEquivalentTo(stubbedEntity);
         }

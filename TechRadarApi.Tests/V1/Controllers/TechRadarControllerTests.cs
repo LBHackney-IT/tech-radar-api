@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TechRadarApi.Tests.V1.Controllers
 {
@@ -28,14 +29,14 @@ namespace TechRadarApi.Tests.V1.Controllers
         }
 
         [Test]
-        public void GetTechnologyWithValidIDReturnsOKResponse()
+        public async Task GetTechnologyWithValidIDReturnsOKResponse()
         {
             // Arrange
             var expectedResponse = _fixture.Create<TechnologyResponseObject>();
-            _mockGetByIdUsecase.Setup(x => x.Execute(expectedResponse.Id)).Returns(expectedResponse);
+            _mockGetByIdUsecase.Setup(x => x.Execute(expectedResponse.Id)).ReturnsAsync(expectedResponse);
 
             // Act
-            var actualResponse = _classUnderTest.ViewTechnology(expectedResponse.Id) as OkObjectResult;
+            var actualResponse = await _classUnderTest.ViewTechnology(expectedResponse.Id).ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             actualResponse.Should().NotBeNull();
@@ -44,25 +45,25 @@ namespace TechRadarApi.Tests.V1.Controllers
         }
 
         [Test]
-        public void GetTechnologyWithNonExistentIDReturnsNotFoundResponse()
+        public async Task GetTechnologyWithNonExistentIDReturnsNotFoundResponse()
         {
             // Arrange
             var id = Guid.NewGuid();
             // Act
-            var response = _classUnderTest.ViewTechnology(id) as NotFoundObjectResult;
+            var response = await _classUnderTest.ViewTechnology(id).ConfigureAwait(false) as NotFoundObjectResult;
             // Assert
             response.StatusCode.Should().Be(404);
         }
 
         [Test]
-        public void GetAllTechnologiesReturnsOKResponse()
+        public async Task GetAllTechnologiesReturnsOKResponse()
         {
             // Arrange
             var expectedResponse = new TechnologyResponseObjectList() { Technologies = _fixture.CreateMany<TechnologyResponseObject>().ToList() };
-            _mockGetAllUsecase.Setup(x => x.Execute()).Returns(expectedResponse);
+            _mockGetAllUsecase.Setup(x => x.Execute()).ReturnsAsync(expectedResponse);
 
             // Act
-            var actualResponse = _classUnderTest.ListTechnologies() as OkObjectResult;
+            var actualResponse = await _classUnderTest.ListTechnologies().ConfigureAwait(false) as OkObjectResult;
 
             // Assert
             actualResponse.Should().NotBeNull();
@@ -71,14 +72,14 @@ namespace TechRadarApi.Tests.V1.Controllers
         }
 
         [Test]
-        public void GetAllTechnologiesReturnsNoContentResponseWhenTheTableIsEmpty()
+        public async Task GetAllTechnologiesReturnsNoContentResponseWhenTheTableIsEmpty()
         {
             // Arrange
             var emptyResponseObject = new TechnologyResponseObjectList() { Technologies = new List<TechnologyResponseObject>() };
-            _mockGetAllUsecase.Setup(x => x.Execute()).Returns(emptyResponseObject);
+            _mockGetAllUsecase.Setup(x => x.Execute()).ReturnsAsync(emptyResponseObject);
 
             // Act
-            var response = _classUnderTest.ListTechnologies() as NoContentResult;
+            var response = await _classUnderTest.ListTechnologies().ConfigureAwait(false) as NoContentResult;
 
             // Assert
             response.StatusCode.Should().Be(204);

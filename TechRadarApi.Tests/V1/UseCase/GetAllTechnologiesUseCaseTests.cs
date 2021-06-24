@@ -8,6 +8,7 @@ using TechRadarApi.V1.UseCase;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
+using System.Threading.Tasks;
 
 namespace TechRadarApi.Tests.V1.UseCase
 {
@@ -26,14 +27,14 @@ namespace TechRadarApi.Tests.V1.UseCase
         }
 
         [Test]
-        public void GetsAllFromTheGateway()
+        public async Task GetsAllFromTheGateway()
         {
             // Arrange
             var stubbedEntities = _fixture.CreateMany<Technology>().ToList();
-            _mockGateway.Setup(x => x.GetAll()).Returns(stubbedEntities);
+            _mockGateway.Setup(x => x.GetAll()).ReturnsAsync(stubbedEntities);
             var expectedResponse = new TechnologyResponseObjectList { Technologies = stubbedEntities.ToResponse() };
             // Act
-            var actualResponse = _classUnderTest.Execute();
+            var actualResponse = await _classUnderTest.Execute().ConfigureAwait(false);
             // Assert
             actualResponse.Should().BeEquivalentTo(expectedResponse);
         }

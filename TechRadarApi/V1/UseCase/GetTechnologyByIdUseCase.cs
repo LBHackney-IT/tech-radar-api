@@ -3,6 +3,7 @@ using TechRadarApi.V1.Factories;
 using TechRadarApi.V1.Gateways;
 using TechRadarApi.V1.UseCase.Interfaces;
 using System;
+using System.Threading.Tasks;
 
 namespace TechRadarApi.V1.UseCase
 {
@@ -13,9 +14,10 @@ namespace TechRadarApi.V1.UseCase
         {
             _gateway = gateway;
         }
-        public TechnologyResponseObject Execute(Guid id)
+        public async Task<TechnologyResponseObject> Execute(Guid id)
         {
-            return _gateway.GetTechnologyById(id).ToResponse();
+            var technology = await _gateway.GetTechnologyById(id).ConfigureAwait(false);
+            return technology.ToResponse();
         }
     }
 }

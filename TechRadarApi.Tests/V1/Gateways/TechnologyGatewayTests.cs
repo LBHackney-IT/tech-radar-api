@@ -10,6 +10,7 @@ using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace TechRadarApi.Tests.V1.Gateways
 {
@@ -28,18 +29,18 @@ namespace TechRadarApi.Tests.V1.Gateways
         }
 
         [Test]
-        public void GetTechnologyByIdReturnsNullIfTechnologyDoesntExist()
+        public async Task GetTechnologyByIdReturnsNullIfTechnologyDoesntExist()
         {
             // Assert
             var id = Guid.NewGuid();
             // Act
-            var response = _classUnderTest.GetTechnologyById(id);
+            var response = await _classUnderTest.GetTechnologyById(id).ConfigureAwait(false);
             // Assert
             response.Should().BeNull();
         }
 
         [Test]
-        public void GetTechnologyByIdReturnsTheTechnologyIfItExists()
+        public async Task GetTechnologyByIdReturnsTheTechnologyIfItExists()
         {
             // Arrange
             var entity = _fixture.Create<Technology>();
@@ -49,7 +50,7 @@ namespace TechRadarApi.Tests.V1.Gateways
                      .ReturnsAsync(dbEntity);
 
             // Act
-            var response = _classUnderTest.GetTechnologyById(entity.Id);
+            var response = await _classUnderTest.GetTechnologyById(entity.Id).ConfigureAwait(false);
 
             // Assert
             _dynamoDb.Verify(x => x.LoadAsync<TechnologyDbEntity>(entity.Id.ToString(), default), Times.Once);
@@ -63,7 +64,7 @@ namespace TechRadarApi.Tests.V1.Gateways
 
         [Test]
         [Ignore("Getting a bug - can't stub the DB response")]
-        public void GetAllTechnologiesReturnsEmptyArrayIfNoTechnologiesExist()
+        public async Task GetAllTechnologiesReturnsEmptyArrayIfNoTechnologiesExist()
         {
             // Arrange
             List<ScanCondition> conditions = new List<ScanCondition>();
@@ -72,7 +73,7 @@ namespace TechRadarApi.Tests.V1.Gateways
             _dynamoDb.Setup(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default))
                     .ReturnsAsync(stubbedResponse);
             // Act
-            var response = _classUnderTest.GetAll();
+            var response = await _classUnderTest.GetAll().ConfigureAwait(false);
             // Assert
             _dynamoDb.Verify(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default), Times.Once);
             response.Should().BeEmpty();
@@ -80,7 +81,7 @@ namespace TechRadarApi.Tests.V1.Gateways
 
         [Test]
         [Ignore("Getting a bug - can't stub the DB response")]
-        public void GetAllTechnologiesReturnsAnArrayOfAllTechnologiesInTheTable()
+        public async Task GetAllTechnologiesReturnsAnArrayOfAllTechnologiesInTheTable()
         {
             // Arrange
             var entities = _fixture.CreateMany<Technology>().ToList();
@@ -90,7 +91,7 @@ namespace TechRadarApi.Tests.V1.Gateways
             _dynamoDb.Setup(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default))
                     .ReturnsAsync(stubbedResponse);
             // Act
-            var response = _classUnderTest.GetAll();
+            var response = await _classUnderTest.GetAll().ConfigureAwait(false);
             // Assert
             _dynamoDb.Verify(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default), Times.Once);
             response.Should().BeEquivalentTo(entities);

@@ -3,6 +3,7 @@ using TechRadarApi.V1.UseCase.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Threading.Tasks;
 
 namespace TechRadarApi.V1.Controllers
 {
@@ -23,9 +24,9 @@ namespace TechRadarApi.V1.Controllers
         [ProducesResponseType(typeof(TechnologyResponseObjectList), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [HttpGet]
-        public IActionResult ListTechnologies()
+        public async Task<IActionResult> ListTechnologies()
         {
-            var result = _getAllUseCase.Execute();
+            var result = await _getAllUseCase.Execute().ConfigureAwait(false);
             if (result.Technologies.Count == 0) return NoContent();
             return Ok(result);
         }
@@ -34,9 +35,9 @@ namespace TechRadarApi.V1.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [HttpGet]
         [Route("{id}")]
-        public IActionResult ViewTechnology(Guid Id)
+        public async Task<IActionResult> ViewTechnology(Guid Id)
         {
-            var result = _getByIdUseCase.Execute(Id);
+            var result = await _getByIdUseCase.Execute(Id).ConfigureAwait(false);
             if (result == null) return NotFound(Id);
             return Ok(result);
         }

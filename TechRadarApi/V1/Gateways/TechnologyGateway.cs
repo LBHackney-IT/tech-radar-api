@@ -5,7 +5,7 @@ using TechRadarApi.V1.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Threading.Tasks;
 
 namespace TechRadarApi.V1.Gateways
 {
@@ -18,16 +18,16 @@ namespace TechRadarApi.V1.Gateways
             _dynamoDbContext = dynamoDbContext;
         }
 
-        public List<Technology> GetAll()
+        public async Task<List<Technology>> GetAll()
         {
             var conditions = new List<ScanCondition>();
-            var results = _dynamoDbContext.ScanAsync<TechnologyDbEntity>(conditions).GetRemainingAsync().GetAwaiter().GetResult();
+            var results = await _dynamoDbContext.ScanAsync<TechnologyDbEntity>(conditions).GetRemainingAsync().ConfigureAwait(false);
             return results.Select(x => x.ToDomain()).ToList();
         }
 
-        public Technology GetTechnologyById(Guid id)
+        public async Task<Technology> GetTechnologyById(Guid id)
         {
-            var result = _dynamoDbContext.LoadAsync<TechnologyDbEntity>(id.ToString()).GetAwaiter().GetResult();
+            var result = await _dynamoDbContext.LoadAsync<TechnologyDbEntity>(id.ToString()).ConfigureAwait(false);
             return result?.ToDomain();
         }
     }

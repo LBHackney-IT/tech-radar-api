@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using TechRadarApi.V1.Boundary.Response;
 using TechRadarApi.V1.Factories;
 using TechRadarApi.V1.Gateways;
@@ -13,9 +14,10 @@ namespace TechRadarApi.V1.UseCase
             _gateway = gateway;
         }
 
-        public TechnologyResponseObjectList Execute()
+        public async Task<TechnologyResponseObjectList> Execute()
         {
-            return new TechnologyResponseObjectList { Technologies = _gateway.GetAll().ToResponse() };
+            var technologies = await _gateway.GetAll().ConfigureAwait(false);
+            return new TechnologyResponseObjectList { Technologies = technologies.ToResponse() };
         }
     }
 }
