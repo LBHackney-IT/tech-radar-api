@@ -1,29 +1,60 @@
 using Amazon.DynamoDBv2.DataModel;
 using AutoFixture;
-using System.Linq;
-using TechRadarApi.Tests.V1.Helper;
-using TechRadarApi.V1.Domain;
-using TechRadarApi.V1.Gateways;
-using TechRadarApi.V1.Infrastructure;
 using FluentAssertions;
-using Moq;
-using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Xunit;
+using System.Linq;
+using Moq;
+using TechRadarApi.V1.Factories;
+using TechRadarApi.V1.Domain;
+using TechRadarApi.V1.Gateways;
+using TechRadarApi.V1.Infrastructure;
 
 namespace TechRadarApi.Tests.V1.Gateways
 {
-    public class TechnologyGatewayTests
+    [Collection("DynamoDb collection")]
+    public class TechnologyGatewayTests : IDisposable
     {
         private readonly Fixture _fixture = new Fixture();
-        private Mock<IDynamoDBContext> _dynamoDb;
+        private readonly IDynamoDBContext _dynamoDb;
         private TechnologyGateway _classUnderTest;
+        private readonly List<Action> _cleanup = new List<Action>();
 
-        public TechnologyGatewayTests()
+
+        public TechnologyGatewayTests(DynamoDbIntegrationTests<Startup> dbTestFixture)
         {
-            _dynamoDb = new Mock<IDynamoDBContext>();
-            _classUnderTest = new TechnologyGateway(_dynamoDb.Object);
+            _dynamoDb = dbTestFixture.DynamoDbContext;
+            _classUnderTest = new TechnologyGateway(_dynamoDb);
+        }
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private bool _disposed;
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing && !_disposed)
+            {
+                foreach (var action in _cleanup)
+                    action();
+
+                _disposed = true;
+            }
+        }
+        private async void SetupTestData(List<Technology> entities)
+        {
+            var tasks = entities.Select(entity => InsertDatatoDynamoDB(entity));
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+        }
+
+        private async Task InsertDatatoDynamoDB(Technology entity)
+        {
+            await _dynamoDb.SaveAsync(entity.ToDatabase()).ConfigureAwait(false);
+            _cleanup.Add(async () => await _dynamoDb.DeleteAsync(entity.ToDatabase()).ConfigureAwait(false));
         }
 
         [Fact]
@@ -42,17 +73,10 @@ namespace TechRadarApi.Tests.V1.Gateways
         {
             // Arrange
             var entity = _fixture.Create<Technology>();
-            var dbEntity = DatabaseEntityHelper.CreateDatabaseEntityFrom(entity);
-
-            _dynamoDb.Setup(x => x.LoadAsync<TechnologyDbEntity>(entity.Id.ToString(), default))
-                     .ReturnsAsync(dbEntity);
-
+            await InsertDatatoDynamoDB(entity).ConfigureAwait(false);
             // Act
             var response = await _classUnderTest.GetTechnologyById(entity.Id).ConfigureAwait(false);
-
             // Assert
-            _dynamoDb.Verify(x => x.LoadAsync<TechnologyDbEntity>(entity.Id.ToString(), default), Times.Once);
-
             response.Should().BeEquivalentTo(entity);
         }
 
@@ -60,63 +84,54 @@ namespace TechRadarApi.Tests.V1.Gateways
         public void GetTechologyByIdExceptionIsThrown()
         {
             // Assert
+            var mockDynamoDb = new Mock<IDynamoDBContext>();
+            _classUnderTest = new TechnologyGateway(mockDynamoDb.Object);
             var id = Guid.NewGuid();
             var exception = new ApplicationException("Test Exception");
-            _dynamoDb.Setup(x => x.LoadAsync<TechnologyDbEntity>(id.ToString(), default))
+            mockDynamoDb.Setup(x => x.LoadAsync<TechnologyDbEntity>(id.ToString(), default))
                      .ThrowsAsync(exception);
             // Act
             Func<Task<Technology>> func = async () => await _classUnderTest.GetTechnologyById(id).ConfigureAwait(false);
             // Assert
             func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
-            _dynamoDb.Verify(x => x.LoadAsync<TechnologyDbEntity>(id.ToString(), default), Times.Once);
+            mockDynamoDb.Verify(x => x.LoadAsync<TechnologyDbEntity>(id.ToString(), default), Times.Once);
         }
 
-        [Fact(Skip = "Getting a bug - can't stub the DB response")]
+        [Fact]
         public async Task GetAllTechnologiesReturnsEmptyArrayIfNoTechnologiesExist()
         {
-            // Arrange
-            List<ScanCondition> conditions = new List<ScanCondition>();
-            var stubbedResponse = new List<TechnologyDbEntity>();
-
-            _dynamoDb.Setup(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default))
-                    .ReturnsAsync(stubbedResponse);
-            // Act
+            // Arrange + Act
             var response = await _classUnderTest.GetAll().ConfigureAwait(false);
             // Assert
-            _dynamoDb.Verify(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default), Times.Once);
             response.Should().BeEmpty();
         }
 
-        [Fact(Skip = "Getting a bug - can't stub the DB response")]
+        [Fact]
         public async Task GetAllTechnologiesReturnsAnArrayOfAllTechnologiesInTheTable()
         {
             // Arrange
             var entities = _fixture.CreateMany<Technology>().ToList();
-            var stubbedResponse = entities.Select(x => DatabaseEntityHelper.CreateDatabaseEntityFrom(x)).ToList();
-
-            List<ScanCondition> conditions = new List<ScanCondition>();
-            _dynamoDb.Setup(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default))
-                    .ReturnsAsync(stubbedResponse);
+            SetupTestData(entities);
             // Act
             var response = await _classUnderTest.GetAll().ConfigureAwait(false);
             // Assert
-            _dynamoDb.Verify(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default), Times.Once);
             response.Should().BeEquivalentTo(entities);
         }
 
-        [Fact(Skip = "Getting a bug - can't stub the DB response")]
+        [Fact(Skip = "Cannot mock DynamoDb context")]
         public void GetAllTechologiesExceptionIsThrown()
         {
-            // Assert
+            // Arrange
+            var mockDynamoDb = new Mock<IDynamoDBContext>();
             var exception = new ApplicationException("Test Exception");
             List<ScanCondition> conditions = new List<ScanCondition>();
-            _dynamoDb.Setup(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default))
+            mockDynamoDb.Setup(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default))
                      .ThrowsAsync(exception);
             // Act
             Func<Task<List<Technology>>> func = async () => await _classUnderTest.GetAll().ConfigureAwait(false);
             // Assert
             func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
-            _dynamoDb.Verify(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default), Times.Once);
+            mockDynamoDb.Verify(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default), Times.Once);
         }
     }
 }
