@@ -66,7 +66,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
             await SaveTestData(entity);
             var technologies = new List<TechnologyResponseObject>();
             technologies.Add(entity.ToResponse());
-            var expectedResponse = new TechnologyResponseObjectList {Technologies = technologies };
+            var expectedResponse = new TechnologyResponseObjectList { Technologies = technologies };
 
             // Act
             var uri = new Uri($"api/v1/technologies", UriKind.Relative);
