@@ -22,7 +22,6 @@ namespace TechRadarApi.V1.Controllers
         }
 
         [ProducesResponseType(typeof(TechnologyResponseObjectList), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         public async Task<IActionResult> ListTechnologies()
@@ -32,6 +31,7 @@ namespace TechRadarApi.V1.Controllers
         }
 
         [ProducesResponseType(typeof(TechnologyResponseObject), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpGet]
         [Route("{id}")]
