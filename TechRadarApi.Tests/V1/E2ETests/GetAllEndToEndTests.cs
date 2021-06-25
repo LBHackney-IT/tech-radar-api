@@ -63,7 +63,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
         {
             // Arrange
             var entity = ConstructTestEntity();
-            await SaveTestData(entity);
+            await SaveTestData(entity).ConfigureAwait(false);
             var technologies = new List<TechnologyResponseObject>();
             technologies.Add(entity.ToResponse());
             var expectedResponse = new TechnologyResponseObjectList { Technologies = technologies };
