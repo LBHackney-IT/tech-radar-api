@@ -28,17 +28,12 @@ namespace TechRadarApi.Tests.V1.E2ETests
             _dbFixture = dbFixture;
         }
 
-        private List<Technology> ConstructTestEntities()
+        private Technology ConstructTestEntity()
         {
-            var entities = _fixture.CreateMany<Technology>().ToList();
-            return entities;
+            var entity = _fixture.Create<Technology>();
+            return entity;
         }
 
-        private async void SetupTestData(List<Technology> entities)
-        {
-            var tasks = entities.Select(entity => SaveTestData(entity));
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-        }
         private async Task SaveTestData(Technology entity)
         {
             await _dbFixture.DynamoDbContext.SaveAsync(entity.ToDatabase()).ConfigureAwait(false);
@@ -67,18 +62,21 @@ namespace TechRadarApi.Tests.V1.E2ETests
         public async Task GetAllTechnologiesReturnsOKResponse()
         {
             // Arrange
-            var entities = ConstructTestEntities();
-            SetupTestData(entities);
-            var uri = new Uri($"api/v1/technologies", UriKind.Relative);
+            var entity = ConstructTestEntity();
+            await SaveTestData(entity);
+            var technologies = new List<TechnologyResponseObject>();
+            technologies.Add(entity.ToResponse());
+            var expectedResponse = new TechnologyResponseObjectList {Technologies = technologies };
 
             // Act
+            var uri = new Uri($"api/v1/technologies", UriKind.Relative);
             var response = await _dbFixture.Client.GetAsync(uri).ConfigureAwait(false);
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var apiEntity = JsonConvert.DeserializeObject<TechnologyResponseObjectList>(responseContent);
+            var actualResponse = JsonConvert.DeserializeObject<TechnologyResponseObjectList>(responseContent);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            apiEntity.Technologies.Should().BeEquivalentTo(entities);
+            actualResponse.Should().BeEquivalentTo(expectedResponse);
         }
 
         [Fact]
