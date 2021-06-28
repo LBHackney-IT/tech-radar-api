@@ -117,21 +117,5 @@ namespace TechRadarApi.Tests.V1.Gateways
             // Assert
             response.Should().BeEquivalentTo(entities);
         }
-
-        [Fact(Skip = "Cannot mock DynamoDb context")]
-        public void GetAllTechologiesExceptionIsThrown()
-        {
-            // Arrange
-            var mockDynamoDb = new Mock<IDynamoDBContext>();
-            var exception = new ApplicationException("Test Exception");
-            List<ScanCondition> conditions = new List<ScanCondition>();
-            mockDynamoDb.Setup(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default))
-                     .ThrowsAsync(exception);
-            // Act
-            Func<Task<List<Technology>>> func = async () => await _classUnderTest.GetAll().ConfigureAwait(false);
-            // Assert
-            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
-            mockDynamoDb.Verify(x => x.ScanAsync<TechnologyDbEntity>(conditions, default).GetRemainingAsync(default), Times.Once);
-        }
     }
 }
