@@ -1,30 +1,32 @@
 using TechRadarApi.V1.Domain;
 using TechRadarApi.V1.Infrastructure;
+using System;
 
 namespace TechRadarApi.V1.Factories
 {
     public static class EntityFactory
     {
-        public static Entity ToDomain(this DatabaseEntity databaseEntity)
+        public static Technology ToDomain(this TechnologyDbEntity databaseEntity)
         {
-            //TODO: Map the rest of the fields in the domain object.
-            // More information on this can be found here https://github.com/LBHackney-IT/lbh-tech-radar-api/wiki/Factory-object-mappings
-
-            return new Entity
+            return new Technology
             {
-                Id = databaseEntity.Id,
-                CreatedAt = databaseEntity.CreatedAt
+                Id = Guid.Parse(databaseEntity.Id),
+                Name = databaseEntity.Name,
+                Description = databaseEntity.Description,
+                Category = databaseEntity.Category,
+                Technique = databaseEntity.Technique
             };
         }
 
-        public static DatabaseEntity ToDatabase(this Entity entity)
+        public static TechnologyDbEntity ToDatabase(this Technology entity)
         {
-            //TODO: Map the rest of the fields in the database object.
-
-            return new DatabaseEntity
+            return new TechnologyDbEntity
             {
-                Id = entity.Id,
-                CreatedAt = entity.CreatedAt
+                Id = entity.Id.ToString(),
+                Name = entity.Name,
+                Description = entity.Description,
+                Category = entity.Category,
+                Technique = entity.Technique
             };
         }
     }

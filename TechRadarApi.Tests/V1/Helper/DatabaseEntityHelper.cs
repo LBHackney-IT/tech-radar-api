@@ -6,19 +6,22 @@ namespace TechRadarApi.Tests.V1.Helper
 {
     public static class DatabaseEntityHelper
     {
-        public static DatabaseEntity CreateDatabaseEntity()
+        public static TechnologyDbEntity CreateDatabaseEntity()
         {
-            var entity = new Fixture().Create<Entity>();
+            var entity = new Fixture().Create<Technology>();
 
             return CreateDatabaseEntityFrom(entity);
         }
 
-        public static DatabaseEntity CreateDatabaseEntityFrom(Entity entity)
+        public static TechnologyDbEntity CreateDatabaseEntityFrom(Technology entity)
         {
-            return new DatabaseEntity
+            return new TechnologyDbEntity
             {
-                Id = entity.Id,
-                CreatedAt = entity.CreatedAt,
+                Id = entity.Id.ToString(),
+                Name = entity.Name,
+                Description = entity.Description,
+                Category = entity.Category,
+                Technique = entity.Technique
             };
         }
     }

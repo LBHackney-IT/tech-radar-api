@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Versioning;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -112,19 +111,10 @@ namespace TechRadarApi
 
             ConfigureLogging(services, Configuration);
 
-            ConfigureDbContext(services);
             services.ConfigureDynamoDB();
 
             RegisterGateways(services);
             RegisterUseCases(services);
-        }
-
-        private static void ConfigureDbContext(IServiceCollection services)
-        {
-            var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING");
-
-            services.AddDbContext<DatabaseContext>(
-                opt => opt.UseNpgsql(connectionString).AddXRayInterceptor(true));
         }
 
         private static void ConfigureLogging(IServiceCollection services, IConfiguration configuration)
@@ -149,13 +139,13 @@ namespace TechRadarApi
 
         private static void RegisterGateways(IServiceCollection services)
         {
-            services.AddScoped<IExampleGateway, DynamoDbGateway>();
+            services.AddScoped<ITechnologyGateway, TechnologyGateway>();
         }
 
         private static void RegisterUseCases(IServiceCollection services)
         {
-            services.AddScoped<IGetAllUseCase, GetAllUseCase>();
-            services.AddScoped<IGetByIdUseCase, GetByIdUseCase>();
+            services.AddScoped<IGetAllTechnologiesUseCase, GetAllTechnologiesUseCase>();
+            services.AddScoped<IGetTechnologyByIdUseCase, GetTechnologyByIdUseCase>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
