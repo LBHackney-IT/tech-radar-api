@@ -10,14 +10,6 @@ provider:
   stage: ${opt:stage}
   account: ${opt:account}
   region: eu-west-2
-  apiKeys:
-    - secureAccess:
-      - api-key-${self:service}-${self:provider.stage}
-  usagePlan:
-    - secureAccess:
-        throttle:
-          burstLimit: 200
-          rateLimit: 100
 
 package:
   artifact: ./bin/release/netcoreapp3.1/tech-radar-api.zip
@@ -31,7 +23,7 @@ functions:
       - http:
           path: /{proxy+}
           method: ANY
-          private: true
+          cors: true
 resources:
   Resources:
     lambdaExecutionRole:
