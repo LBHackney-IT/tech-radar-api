@@ -156,7 +156,7 @@ namespace TechRadarApi
                 .AllowAnyOrigin()
                 .AllowAnyHeader()
                 .AllowAnyMethod());
-                
+
             app.UseCorrelation();
 
             if (env.IsDevelopment())
