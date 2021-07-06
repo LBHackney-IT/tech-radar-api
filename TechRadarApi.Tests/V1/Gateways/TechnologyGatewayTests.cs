@@ -45,11 +45,6 @@ namespace TechRadarApi.Tests.V1.Gateways
                 _disposed = true;
             }
         }
-        private async void SetupTestData(List<Technology> entities)
-        {
-            var tasks = entities.Select(entity => InsertDatatoDynamoDB(entity));
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-        }
 
         private async Task InsertDatatoDynamoDB(Technology entity)
         {
@@ -110,12 +105,14 @@ namespace TechRadarApi.Tests.V1.Gateways
         public async Task GetAllTechnologiesReturnsAnArrayOfAllTechnologiesInTheTable()
         {
             // Arrange
-            var entities = _fixture.CreateMany<Technology>().ToList();
-            SetupTestData(entities);
+            var entity = _fixture.Create<Technology>();
+            await InsertDatatoDynamoDB(entity).ConfigureAwait(false);
+            var expectedResponse = new List<Technology>();
+            expectedResponse.Add(entity);
             // Act
             var response = await _classUnderTest.GetAll().ConfigureAwait(false);
             // Assert
-            response.Should().BeEquivalentTo(entities);
+            response.Should().BeEquivalentTo(entity);
         }
     }
 }
