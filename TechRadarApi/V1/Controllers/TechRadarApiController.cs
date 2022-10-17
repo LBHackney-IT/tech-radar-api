@@ -41,5 +41,12 @@ namespace TechRadarApi.V1.Controllers
             if (result == null) return NotFound(Id);
             return Ok(result);
         }
+        
+
+        [HttpPost]
+        [Route("")]
+        public async Task<IActionResult> PostTechnology(){
+            var result = await _getAllUseCase
+        }
     }
 }
