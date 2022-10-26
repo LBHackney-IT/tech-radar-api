@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using TechRadarApi.V1.Boundary.Request;
 
 namespace TechRadarApi.V1.Controllers
 {
@@ -15,10 +16,12 @@ namespace TechRadarApi.V1.Controllers
     {
         private readonly IGetAllTechnologiesUseCase _getAllUseCase;
         private readonly IGetTechnologyByIdUseCase _getByIdUseCase;
-        public TechRadarApiController(IGetAllTechnologiesUseCase getAllUseCase, IGetTechnologyByIdUseCase getByIdUseCase)
+        private readonly IPostNewTechnologyUseCase _postNewTechnologyUseCase;
+        public TechRadarApiController(IGetAllTechnologiesUseCase getAllUseCase, IGetTechnologyByIdUseCase getByIdUseCase, IPostNewTechnologyUseCase postNewTechnologyUseCase)
         {
             _getAllUseCase = getAllUseCase;
             _getByIdUseCase = getByIdUseCase;
+            _postNewTechnologyUseCase = postNewTechnologyUseCase;
         }
 
         [ProducesResponseType(typeof(TechnologyResponseObjectList), StatusCodes.Status200OK)]
@@ -42,11 +45,14 @@ namespace TechRadarApi.V1.Controllers
             return Ok(result);
         }
         
-
+        [ProducesResponseType(typeof(TechnologyResponseObject), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        [Route("")]
-        public async Task<IActionResult> PostTechnology(){
-            var result = await _getAllUseCase
+        public async Task<IActionResult> PostNewTechnology([FromBody] CreateTechnologyRequest createTechnologyRequest)
+        {
+            var technology = await _postNewTechnologyUseCase.Execute(createTechnologyRequest).ConfigureAwait(false);
+            return Created(new Uri($"api/v1/technologies/{technology.Name}", UriKind.Relative));
         }
     }
 }

@@ -19,10 +19,10 @@ namespace TechRadarApi.V1.Factories
                 Technique = domain.Technique
             };
         }
-
         public static List<TechnologyResponseObject> ToResponse(this IEnumerable<Technology> domainList)
         {
             return domainList.Select(domain => domain.ToResponse()).ToList();
         }
+        
     }
 }

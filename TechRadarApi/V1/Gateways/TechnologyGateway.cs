@@ -2,6 +2,8 @@ using Amazon.DynamoDBv2.DataModel;
 using TechRadarApi.V1.Domain;
 using TechRadarApi.V1.Factories;
 using TechRadarApi.V1.Infrastructure;
+using TechRadarApi.V1.UseCase.Interfaces;
+using TechRadarApi.V1.Boundary.Request;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +14,8 @@ namespace TechRadarApi.V1.Gateways
     public class TechnologyGateway : ITechnologyGateway
     {
         private readonly IDynamoDBContext _dynamoDbContext;
+
+        private readonly IPostNewTechnologyUseCase _postNewTechnologyUseCase;
 
         public TechnologyGateway(IDynamoDBContext dynamoDbContext)
         {
@@ -31,8 +35,10 @@ namespace TechRadarApi.V1.Gateways
             return result?.ToDomain();
         }
 
-        public async Task<Technology> PostTechnology(string id){
-            var note = 
+        public async Task<Technology> PostNewTechnology(CreateTechnologyRequest createTechnologyRequest)
+        {
+            var result = await _dynamoDbContext.LoadAsync<TechnologyDbEntity>(createTechnologyRequest).ConfigureAwait(false);
+            return result?.ToDomain();
         }
     }
 }
