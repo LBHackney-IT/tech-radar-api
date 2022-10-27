@@ -15,26 +15,54 @@ namespace TechRadarApi.Tests.V1.UseCase
 {
     public class PostNewTechnologyUseCaseTests
     {
-        private Mock<ITechnologyGateway> _mockGateway;
-        private PostNewTechnologyUseCase _classUnderTest;
-        private Fixture _fixture;
+        private readonly Mock<ITechnologyGateway> _mockGateway;
+        private readonly PostNewTechnologyUseCase _classUnderTest;
+        private readonly Fixture _fixture;
 
         public PostNewTechnologyUseCaseTests()
         {
             _mockGateway = new Mock<ITechnologyGateway>();
-            _classUnderTest = new GetTechnologyByIdUseCase(_mockGateway.Object);
+            _classUnderTest = new PostNewTechnologyUseCase(_mockGateway.Object);
             _fixture = new Fixture();
         }
 
-        [Fact]
+        [Fact  (Skip = "This test is not implemented correctly")]
          public async Task CreateNewTechnologyReturnsCreatedResponse()
         {
             // Arrange
-            var technologyRequest = new CreateTechnologyRequest();
+            var createTechnologyRequest = new CreateTechnologyRequest();
 
             var technology = _fixture.Create<Technology>();
 
-            _mockGateway.Setup(x => x.PostNewTechnology(technologyReqeust).ReturnsAsync(technology));
+            _mockGateway.Setup(x => x.PostNewTechnology(new CreateTechnologyRequest).ReturnsAsync(technology));
+
+            // Act
+            var response = await _classUnderTest.Execute(new CreateTechnologyRequest()).ConfigureAwait(false);
+
+            // Assert
+            response.Should().BeEquivalentTo(technology.ToResponse());
+        }
+
+        [Fact]
+        public async Task PostNewTechnologyUseCaseShouldCallTheGateWay(){
+            //arrange 
+
+            _mockGateway.Setup(x => x.PostNewTechnology(It.IsAny<CreateTechnologyRequest>()));
+            //Act
+            await _classUnderTest.Execute(new CreateTechnologyRequest()).ConfigureAwait(false);
+
+            //Assert
+            _mockGateway.Verify(x => x.PostNewTechnology(It.IsAny<CreateTechnologyRequest>()));
+        }
+        [Fact]
+        public async Task PostNewTechnologyByIdAsyncReturnsResponse()
+        {
+            // Arrange
+            var technologyRequest = new CreateTechnologyRequest();
+   
+            var technology = _fixture.Create<Technology>();
+
+            _mockGateway.Setup(x => x.PostNewTechnology(technologyRequest)).ReturnsAsync(technology);
 
             // Act
             var response = await _classUnderTest.Execute(technologyRequest)
@@ -44,4 +72,5 @@ namespace TechRadarApi.Tests.V1.UseCase
             response.Should().BeEquivalentTo(technology.ToResponse());
         }
     }
+    
 }

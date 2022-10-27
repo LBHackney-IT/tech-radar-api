@@ -15,8 +15,6 @@ namespace TechRadarApi.V1.Gateways
     {
         private readonly IDynamoDBContext _dynamoDbContext;
 
-        private readonly IPostNewTechnologyUseCase _postNewTechnologyUseCase;
-
         public TechnologyGateway(IDynamoDBContext dynamoDbContext)
         {
             _dynamoDbContext = dynamoDbContext;

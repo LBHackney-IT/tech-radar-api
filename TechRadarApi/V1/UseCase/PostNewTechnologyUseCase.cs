@@ -17,7 +17,7 @@ namespace TechRadarApi.V1.UseCase
         }
         public async Task<TechnologyResponseObject> Execute(CreateTechnologyRequest createTechnologyRequest)
         {
-           var technology = await _gateway.PostNewTechnology(createTechnologyRequest.ToDatabase()).ConfigureAwait(false);
+           var technology = await _gateway.PostNewTechnology(createTechnologyRequest).ConfigureAwait(false);
            return technology.ToResponse();
         }
 

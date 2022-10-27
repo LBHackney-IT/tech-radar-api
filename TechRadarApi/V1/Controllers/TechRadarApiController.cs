@@ -52,7 +52,7 @@ namespace TechRadarApi.V1.Controllers
         public async Task<IActionResult> PostNewTechnology([FromBody] CreateTechnologyRequest createTechnologyRequest)
         {
             var technology = await _postNewTechnologyUseCase.Execute(createTechnologyRequest).ConfigureAwait(false);
-            return Created(new Uri($"api/v1/technologies/{technology.Name}", UriKind.Relative));
+            return Created(new Uri($"api/v1/technologies/{technology.Name}"),UriKind.Relative);
         }
     }
 }
