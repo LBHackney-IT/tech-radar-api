@@ -26,7 +26,7 @@ namespace TechRadarApi.Tests.V1.UseCase
             _fixture = new Fixture();
         }
 
-        [Fact  (Skip = "This test is not implemented correctly")]
+        [Fact]
          public async Task CreateNewTechnologyReturnsCreatedResponse()
         {
             // Arrange
@@ -34,7 +34,7 @@ namespace TechRadarApi.Tests.V1.UseCase
 
             var technology = _fixture.Create<Technology>();
 
-            _mockGateway.Setup(x => x.PostNewTechnology(new CreateTechnologyRequest).ReturnsAsync(technology));
+            _mockGateway.Setup(x => x.PostNewTechnology(new CreateTechnologyRequest())).ReturnsAsync(technology);
 
             // Act
             var response = await _classUnderTest.Execute(new CreateTechnologyRequest()).ConfigureAwait(false);

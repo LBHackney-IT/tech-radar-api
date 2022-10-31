@@ -1,6 +1,7 @@
 using TechRadarApi.V1.Boundary.Response;
 using TechRadarApi.V1.UseCase.Interfaces;
 using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -17,11 +18,13 @@ namespace TechRadarApi.V1.Controllers
         private readonly IGetAllTechnologiesUseCase _getAllUseCase;
         private readonly IGetTechnologyByIdUseCase _getByIdUseCase;
         private readonly IPostNewTechnologyUseCase _postNewTechnologyUseCase;
-        public TechRadarApiController(IGetAllTechnologiesUseCase getAllUseCase, IGetTechnologyByIdUseCase getByIdUseCase, IPostNewTechnologyUseCase postNewTechnologyUseCase)
+        private readonly IPatchTechnologyByIdUseCase _patchTechnologyByIdUseCase;
+        public TechRadarApiController(IGetAllTechnologiesUseCase getAllUseCase, IGetTechnologyByIdUseCase getByIdUseCase, IPostNewTechnologyUseCase postNewTechnologyUseCase, IPatchTechnologyByIdUseCase patchTechnologyByIdUseCase)
         {
             _getAllUseCase = getAllUseCase;
             _getByIdUseCase = getByIdUseCase;
             _postNewTechnologyUseCase = postNewTechnologyUseCase;
+            _patchTechnologyByIdUseCase = patchTechnologyByIdUseCase;
         }
 
         [ProducesResponseType(typeof(TechnologyResponseObjectList), StatusCodes.Status200OK)]
@@ -54,5 +57,22 @@ namespace TechRadarApi.V1.Controllers
             var technology = await _postNewTechnologyUseCase.Execute(createTechnologyRequest).ConfigureAwait(false);
             return Created(new Uri($"api/v1/technologies/{technology.Name}"),UriKind.Relative);
         }
+
+        [ProducesResponseType(typeof(TechnologyResponseObject), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [HttpPatch]
+        [Route("{id}")]
+        public async Task <IActionResult> EditTechnology([FromRoute]Guid Id, [FromBody] PatchTechnologyRequest request)
+        {
+            // get raw body text (Only the parameters that need to be changed will be sent.
+            // Deserializing the request object makes it imposible to figure out if the requester
+            // wants to set a parameter to null, or to not update that value.
+            // The bodyText is the raw request object that will be used to determine this information).
+            
+                await _patchTechnologyByIdUseCase.Execute(Id, request).ConfigureAwait(false);
+                return Ok();
+        }
     }
+
 }

@@ -13,5 +13,7 @@ namespace TechRadarApi.V1.Gateways
         Task<List<Technology>> GetAll();
 
         Task<Technology> PostNewTechnology(CreateTechnologyRequest createTechnologyRequest);
+
+        Task PatchTechnology(Guid Id, PatchTechnologyRequest patchTechnologyRequest);
     }
 }

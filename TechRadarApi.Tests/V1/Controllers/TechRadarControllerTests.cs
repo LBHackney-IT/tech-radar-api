@@ -19,6 +19,7 @@ namespace TechRadarApi.Tests.V1.Controllers
         private readonly Mock<IGetTechnologyByIdUseCase> _mockGetByIdUsecase;
         private readonly Mock<IGetAllTechnologiesUseCase> _mockGetAllUsecase;
         private readonly Mock<IPostNewTechnologyUseCase> _mockPostNewUsecase;
+        private readonly Mock<IPatchTechnologyByIdUseCase> _mockPatchUsecase;
         private readonly Fixture _fixture = new Fixture();
 
         public TechRadarApiControllerFacts()
@@ -26,7 +27,8 @@ namespace TechRadarApi.Tests.V1.Controllers
             _mockGetAllUsecase = new Mock<IGetAllTechnologiesUseCase>();
             _mockGetByIdUsecase = new Mock<IGetTechnologyByIdUseCase>();
             _mockPostNewUsecase = new Mock<IPostNewTechnologyUseCase>();
-            _classUnderTest = new TechRadarApiController(_mockGetAllUsecase.Object, _mockGetByIdUsecase.Object, _mockPostNewUsecase.Object);
+            _mockPatchUsecase = new Mock<IPatchTechnologyByIdUseCase>();
+            _classUnderTest = new TechRadarApiController(_mockGetAllUsecase.Object, _mockGetByIdUsecase.Object, _mockPostNewUsecase.Object, _mockPatchUsecase.Object);
         }
 
         [Fact]
