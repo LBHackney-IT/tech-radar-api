@@ -26,25 +26,8 @@ namespace TechRadarApi.Tests.V1.UseCase
             _fixture = new Fixture();
         }
 
-        [Fact  (Skip = "This test is not implemented correctly")]
-         public async Task CreateNewTechnologyReturnsCreatedResponse()
-        {
-            // Arrange
-            var createTechnologyRequest = new CreateTechnologyRequest();
-
-            var technology = _fixture.Create<Technology>();
-
-            _mockGateway.Setup(x => x.PostNewTechnology(new CreateTechnologyRequest).ReturnsAsync(technology));
-
-            // Act
-            var response = await _classUnderTest.Execute(new CreateTechnologyRequest()).ConfigureAwait(false);
-
-            // Assert
-            response.Should().BeEquivalentTo(technology.ToResponse());
-        }
-
         [Fact]
-        public async Task PostNewTechnologyUseCaseShouldCallTheGateWay(){
+        public async Task PostNewTechnologyUseCase_ShouldCallTheGateWay(){
             //arrange 
 
             _mockGateway.Setup(x => x.PostNewTechnology(It.IsAny<CreateTechnologyRequest>()));
@@ -71,6 +54,7 @@ namespace TechRadarApi.Tests.V1.UseCase
             // Assert
             response.Should().BeEquivalentTo(technology.ToResponse());
         }
+        
     }
     
 }
