@@ -1,6 +1,7 @@
 using TechRadarApi.V1.Controllers;
 using TechRadarApi.V1.UseCase.Interfaces;
 using TechRadarApi.V1.Boundary.Response;
+using TechRadarApi.V1.Boundary.Request;
 using AutoFixture;
 using Moq;
 using Xunit;
@@ -10,6 +11,7 @@ using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace TechRadarApi.Tests.V1.Controllers
 {
@@ -112,6 +114,52 @@ namespace TechRadarApi.Tests.V1.Controllers
 
             // Assert
             func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
+        }
+        
+        [Fact]
+         public async void PostTechnologyReturnsCreated()
+        {  
+             //create fixture of technology response object
+             // mockGateway and return response object
+             // result of classundertest new request
+             // result was CreatedResult.should/ value.should.be
+            
+            //Arrange
+            var technology = _fixture.Create<TechnologyResponseObject>();
+
+            _mockPostNewUsecase.Setup(x => x.Execute(It.IsAny<CreateTechnologyRequest>())).ReturnsAsync(technology);
+
+            // Act
+
+            var result = await _classUnderTest.PostTechnology(new CreateTechnologyRequest()).ConfigureAwait(false);
+
+            // Assert
+            (result as CreatedResult).Should().NotBe(null);
+            (result as CreatedResult).Should().NotBeOfType<Uri>();
+        }
+
+        [Fact]
+        public async Task PostTechnologyReturns200Response()
+        {
+            var guid = Guid.NewGuid();
+
+            var request = new CreateTechnologyRequest()
+            {
+                Id = Guid.NewGuid(),
+                Name = "DynamoDB",
+                Description = "NoSQL database hosted on AWS",
+                Category = "Languages & Frameworks",
+                Technique = "Adopt"
+            };
+            var response = _fixture.Create<TechnologyResponseObject>();
+
+            _mockPostNewUsecase.Setup(x => x.Execute(request)).ReturnsAsync(response);
+        
+            var result = await _classUnderTest.PostTechnology(request).ConfigureAwait(false);
+            //Assert
+            // Helper Methods
+            (result as IStatusCodeActionResult).StatusCode.Should().Be(201);
+            (result as ObjectResult)?.Value.Should().Be(response.Name);
         }
     }
 }
