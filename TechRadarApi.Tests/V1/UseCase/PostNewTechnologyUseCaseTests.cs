@@ -17,7 +17,7 @@ namespace TechRadarApi.Tests.V1.UseCase
     {
         private readonly Mock<ITechnologyGateway> _mockGateway;
         private readonly PostNewTechnologyUseCase _classUnderTest;
-        private readonly Fixture _fixture;
+        private readonly Fixture _fixture = new Fixture();
 
         public PostNewTechnologyUseCaseTests()
         {
@@ -25,24 +25,12 @@ namespace TechRadarApi.Tests.V1.UseCase
             _classUnderTest = new PostNewTechnologyUseCase(_mockGateway.Object);
             _fixture = new Fixture();
         }
-
-        [Fact]
-        public async Task PostNewTechnologyUseCase_ShouldCallTheGateWay(){
-            //arrange 
-
-            _mockGateway.Setup(x => x.PostNewTechnology(It.IsAny<CreateTechnologyRequest>()));
-            //Act
-            await _classUnderTest.Execute(new CreateTechnologyRequest()).ConfigureAwait(false);
-
-            //Assert
-            _mockGateway.Verify(x => x.PostNewTechnology(It.IsAny<CreateTechnologyRequest>()));
-        }
+        
         [Fact]
         public async Task PostNewTechnologyByIdAsyncReturnsResponse()
         {
             // Arrange
             var technologyRequest = new CreateTechnologyRequest();
-   
             var technology = _fixture.Create<Technology>();
 
             _mockGateway.Setup(x => x.PostNewTechnology(technologyRequest)).ReturnsAsync(technology);
@@ -53,6 +41,24 @@ namespace TechRadarApi.Tests.V1.UseCase
 
             // Assert
             response.Should().BeEquivalentTo(technology.ToResponse());
+        }
+
+        [Fact]
+        public void PostNewTechnologyByIdThrowsException()
+        {
+            //Arrange
+            var technologyRequest = new CreateTechnologyRequest();
+            
+            var exception = new ApplicationException("Test Exception");
+            _mockGateway.Setup(x => x.PostNewTechnology(technologyRequest)).ThrowsAsync(exception);
+
+            //Act
+           
+            Func<Task<TechnologyResponseObject>> func = async () => await _classUnderTest.Execute(technologyRequest).ConfigureAwait(false);
+
+            //Assert
+            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
+
         }
         
     }

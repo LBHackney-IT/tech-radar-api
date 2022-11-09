@@ -49,10 +49,10 @@ namespace TechRadarApi.V1.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [HttpPost]
-        public async Task<IActionResult> PostNewTechnology([FromBody] CreateTechnologyRequest createTechnologyRequest)
+        public async Task<IActionResult> PostTechnology([FromBody] CreateTechnologyRequest createTechnologyRequest)
         {
             var technology = await _postNewTechnologyUseCase.Execute(createTechnologyRequest).ConfigureAwait(false);
-            return Created(new Uri($"api/v1/technologies/{technology.Name}"),UriKind.Relative);
+            return Created(new Uri($"api/v1/technologies/{technology.Name}", UriKind.Relative), technology.Name);
         }
     }
 }

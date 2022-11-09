@@ -157,7 +157,7 @@ namespace TechRadarApi.Tests.V1.Controllers
         
             var result = await _classUnderTest.PostTechnology(request).ConfigureAwait(false);
             //Assert
-            // Helper Methods
+            //
             (result as IStatusCodeActionResult).StatusCode.Should().Be(201);
             (result as ObjectResult)?.Value.Should().Be(response.Name);
         }
