@@ -18,13 +18,16 @@ namespace TechRadarApi.Tests.V1.Controllers
         private readonly TechRadarApiController _classUnderTest;
         private readonly Mock<IGetTechnologyByIdUseCase> _mockGetByIdUsecase;
         private readonly Mock<IGetAllTechnologiesUseCase> _mockGetAllUsecase;
+        private readonly Mock<IDeleteTechnologyByIdUseCase> _mockDeleteByIdUsecase;
+        
         private readonly Fixture _fixture = new Fixture();
 
         public TechRadarApiControllerFacts()
         {
             _mockGetAllUsecase = new Mock<IGetAllTechnologiesUseCase>();
             _mockGetByIdUsecase = new Mock<IGetTechnologyByIdUseCase>();
-            _classUnderTest = new TechRadarApiController(_mockGetAllUsecase.Object, _mockGetByIdUsecase.Object);
+            _mockDeleteByIdUsecase = new Mock<IDeleteTechnologyByIdUseCase>();
+            _classUnderTest = new TechRadarApiController(_mockGetAllUsecase.Object, _mockGetByIdUsecase.Object, _mockDeleteByIdUsecase.Object);
         }
 
         [Fact]
