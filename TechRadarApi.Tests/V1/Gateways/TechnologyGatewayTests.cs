@@ -1,12 +1,12 @@
 using Amazon.DynamoDBv2.DataModel;
 using AutoFixture;
 using FluentAssertions;
+using Hackney.Core.Testing.DynamoDb;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using System.Linq;
-using Moq;
 using TechRadarApi.V1.Factories;
 using TechRadarApi.V1.Domain;
 using TechRadarApi.V1.Gateways;
@@ -19,15 +19,15 @@ namespace TechRadarApi.Tests.V1.Gateways
     public class TechnologyGatewayTests : IDisposable
     {
         private readonly Fixture _fixture = new Fixture();
-        private readonly IDynamoDBContext _dynamoDb;
+        private readonly IDynamoDbFixture _dbFixture;
         private TechnologyGateway _classUnderTest;
         private readonly List<Action> _cleanup = new List<Action>();
 
 
-        public TechnologyGatewayTests(DynamoDbIntegrationTests<Startup> dbTestFixture)
+        public TechnologyGatewayTests(AwsMockWebApplicationFactory<Startup> appFactory)
         {
-            _dynamoDb = dbTestFixture.DynamoDbContext;
-            _classUnderTest = new TechnologyGateway(_dynamoDb);
+            _dbFixture = appFactory.DynamoDbFixture;
+            _classUnderTest = new TechnologyGateway(_dbFixture.DynamoDbContext);
         }
         public void Dispose()
         {
@@ -40,32 +40,13 @@ namespace TechRadarApi.Tests.V1.Gateways
         {
             if (disposing && !_disposed)
             {
+                _dbFixture.Dispose();
                 foreach (var action in _cleanup)
                     action();
 
                 _disposed = true;
             }
         }
-
-        private async Task InsertDatatoDynamoDB(Technology entity)
-        {
-            await _dynamoDb.SaveAsync(entity.ToDatabase()).ConfigureAwait(false);
-            _cleanup.Add(async () => await _dynamoDb.DeleteAsync(entity.ToDatabase()).ConfigureAwait(false));
-        }
-
-         private CreateTechnologyRequest ConstructTestEntity()
-        {
-            var technologyRequest = _fixture.Build<CreateTechnologyRequest>()
-                .With(x => x.Id == Guid.NewGuid())
-                .With(x => x.Name == "DynamoDB")
-                .With(x => x.Description == "NoSQL database hosted on AWS")
-                .With(x => x.Category == "Language & Frameworks")
-                .With(x => x.Technique == "Adopt")
-                .Create();
-
-            return technologyRequest;
-        }
-
 
         [Fact]
         public async Task GetTechnologyByIdReturnsNullIfTechnologyDoesntExist()
@@ -83,28 +64,25 @@ namespace TechRadarApi.Tests.V1.Gateways
         {
             // Arrange
             var entity = _fixture.Create<Technology>();
-            await InsertDatatoDynamoDB(entity).ConfigureAwait(false);
+            await _dbFixture.SaveEntityAsync<TechnologyDbEntity>(entity.ToDatabase()).ConfigureAwait(false);
             // Act
             var response = await _classUnderTest.GetTechnologyById(entity.Id).ConfigureAwait(false);
             // Assert
             response.Should().BeEquivalentTo(entity);
         }
 
-        [Fact]
-        public void GetTechologyByIdExceptionIsThrown()
+        private List<TechnologyDbEntity> CreateAndInsertTechnologies(int count)
         {
-            // Assert
-            var mockDynamoDb = new Mock<IDynamoDBContext>();
-            _classUnderTest = new TechnologyGateway(mockDynamoDb.Object);
-            var id = Guid.NewGuid();
-            var exception = new ApplicationException("Test Exception");
-            mockDynamoDb.Setup(x => x.LoadAsync<TechnologyDbEntity>(id.ToString(), default))
-                     .ThrowsAsync(exception);
-            // Act
-            Func<Task<Technology>> func = async () => await _classUnderTest.GetTechnologyById(id).ConfigureAwait(false);
-            // Assert
-            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
-            mockDynamoDb.Verify(x => x.LoadAsync<TechnologyDbEntity>(id.ToString(), default), Times.Once);
+            var technologies = new List<TechnologyDbEntity>();
+
+            for (int i = 0; i < count; i++)
+            {
+                var technology = _fixture.Create<TechnologyDbEntity>();
+                _dbFixture.SaveEntityAsync(technology).GetAwaiter().GetResult();
+                technologies.Add(technology);
+            }
+
+            return technologies;
         }
 
         [Fact]
@@ -120,33 +98,27 @@ namespace TechRadarApi.Tests.V1.Gateways
         public async Task GetAllTechnologiesReturnsAnArrayOfAllTechnologiesInTheTable()
         {
             // Arrange
-            var entity = _fixture.Create<Technology>();
-            await InsertDatatoDynamoDB(entity).ConfigureAwait(false);
-            var expectedResponse = new List<Technology>();
-            expectedResponse.Add(entity);
+            var technologies = CreateAndInsertTechnologies(5);
+            var expectedResult = technologies.Select(x => x.ToDomain()).ToList();
             // Act
             var response = await _classUnderTest.GetAll().ConfigureAwait(false);
             // Assert
-            response.Should().BeEquivalentTo(entity);
+            response.Should().BeEquivalentTo(expectedResult);
         }
 
         [Fact]
         public async Task PostTechnologySuccessfullySaves()
         {
-            //Arrange
-            var postRequest = ConstructTestEntity();
-            var mockDynamoDb = new Mock<IDynamoDBContext>();
-            _classUnderTest = new TechnologyGateway(mockDynamoDb.Object);
-
-            //Act
-            _ = await _classUnderTest.PostNewTechnology(postRequest).ConfigureAwait(false);
-            var dbEntity = await _dynamoDb.LoadAsync<TechnologyDbEntity>(postRequest.Id).ConfigureAwait(false);
-            
+            // Arrange
+            var postRequest = _fixture.Create<CreateTechnologyRequest>();
+            // Act
+            var response = await _classUnderTest.PostNewTechnology(postRequest).ConfigureAwait(false);
+            var dbEntity = await _dbFixture.DynamoDbContext.LoadAsync<TechnologyDbEntity>(response.Id)
+                                                           .ConfigureAwait(false);
             // Assert
-            dbEntity.Should().BeEquivalentTo(postRequest);
-            _cleanup.Add(async () => await _dynamoDb.DeleteAsync<TechnologyDbEntity>(dbEntity.Id).ConfigureAwait(false));
-            
-            
+            dbEntity.Should().BeEquivalentTo(postRequest.ToDatabase(), c => c.Excluding(x => x.Id));
+            _cleanup.Add(async () => await _dbFixture.DynamoDbContext.DeleteAsync<TechnologyDbEntity>(dbEntity.Id)
+                                                                     .ConfigureAwait(false));
         }
     }
 }

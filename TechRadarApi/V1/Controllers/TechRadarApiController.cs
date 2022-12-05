@@ -44,7 +44,7 @@ namespace TechRadarApi.V1.Controllers
             if (result == null) return NotFound(Id);
             return Ok(result);
         }
-        
+
         [ProducesResponseType(typeof(TechnologyResponseObject), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -52,7 +52,7 @@ namespace TechRadarApi.V1.Controllers
         public async Task<IActionResult> PostTechnology([FromBody] CreateTechnologyRequest createTechnologyRequest)
         {
             var technology = await _postNewTechnologyUseCase.Execute(createTechnologyRequest).ConfigureAwait(false);
-            return Created(new Uri($"api/v1/technologies/{technology.Name}", UriKind.Relative), technology.Name);
+            return Created(new Uri($"api/v1/technologies/{technology.Id}", UriKind.Relative), technology);
         }
     }
 }

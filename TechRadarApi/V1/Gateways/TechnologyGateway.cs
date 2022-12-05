@@ -29,14 +29,15 @@ namespace TechRadarApi.V1.Gateways
 
         public async Task<Technology> GetTechnologyById(Guid id)
         {
-            var result = await _dynamoDbContext.LoadAsync<TechnologyDbEntity>(id.ToString()).ConfigureAwait(false);
+            var result = await _dynamoDbContext.LoadAsync<TechnologyDbEntity>(id).ConfigureAwait(false);
             return result?.ToDomain();
         }
 
         public async Task<Technology> PostNewTechnology(CreateTechnologyRequest createTechnologyRequest)
         {
-            var result = await _dynamoDbContext.LoadAsync<TechnologyDbEntity>(createTechnologyRequest).ConfigureAwait(false);
-            return result?.ToDomain();
+            var databaseEntity = createTechnologyRequest.ToDatabase();
+            await _dynamoDbContext.SaveAsync<TechnologyDbEntity>(databaseEntity).ConfigureAwait(false);
+            return databaseEntity.ToDomain();
         }
     }
 }

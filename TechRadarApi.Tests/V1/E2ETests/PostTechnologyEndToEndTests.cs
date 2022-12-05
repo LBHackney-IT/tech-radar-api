@@ -1,5 +1,6 @@
 using AutoFixture;
 using FluentAssertions;
+using Hackney.Core.Testing.DynamoDb;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -23,35 +24,20 @@ namespace TechRadarApi.Tests.V1.E2ETests
 
         private readonly Fixture _fixture = new Fixture();
         public TechnologyDbEntity Technology { get; private set; }
-        private readonly DynamoDbIntegrationTests<Startup> _dbFixture;
+        private readonly IDynamoDbFixture _dbFixture;
+        private readonly HttpClient _client;
         private readonly List<Action> _cleanupActions = new List<Action>();
 
-        public PostTechnologyEndToEndTests(DynamoDbIntegrationTests<Startup> dbFixture)
+        public PostTechnologyEndToEndTests(AwsMockWebApplicationFactory<Startup> appFactory)
         {
-            _dbFixture = dbFixture;
+            _dbFixture = appFactory.DynamoDbFixture;
+            _client = appFactory.Client;
         }
 
-        private CreateTechnologyRequest ConstructTestEntity()
-        {
-            var technologyRequest = _fixture.Build<CreateTechnologyRequest>()
-                .With(x => x.Id == Guid.NewGuid())
-                .With(x => x.Name == "DynamoDB")
-                .With(x => x.Description == "NoSQL database hosted on AWS")
-                .With(x => x.Category == "Language & Frameworks")
-                .With(x => x.Technique == "Adopt")
-                .Create();
-
-            return technologyRequest;
-        }
-
-        private async Task SaveTestData(Technology entity)
-        {
-            await _dbFixture.DynamoDbContext.SaveAsync(entity.ToDatabase()).ConfigureAwait(false);
-            _cleanupActions.Add(async () => await _dbFixture.DynamoDbContext.DeleteAsync<TechnologyDbEntity>(entity.Id.ToString()).ConfigureAwait(false));
-        }
 
         public void Dispose()
         {
+            _dbFixture?.Dispose();
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -67,24 +53,30 @@ namespace TechRadarApi.Tests.V1.E2ETests
                 _disposed = true;
             }
         }
-        
+
         [Fact]
-        public async Task PostTechnologyReturnsOkResponse()
+        public async Task PostTechnologyReturnsCreatedResponse()
         {
             // Arrange
-            var technology = ConstructTestEntity();
+            var request = _fixture.Create<CreateTechnologyRequest>();
+            var uri = new Uri("api/v1/technologies", UriKind.Relative);
+            var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
 
-            var uri = new Uri($"api/v1/technologies/{technology.Name}", UriKind.Relative);
-            var content = new StringContent(JsonConvert.SerializeObject(technology), Encoding.UTF8, "application/json");
-            var response = await _dbFixture.Client.PostAsync(uri, content).ConfigureAwait(false);
-
-            
             //Act
+            var response = await _client.PostAsync(uri, content).ConfigureAwait(false);
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var apiPerson = JsonConvert.DeserializeObject<TechnologyResponseObject>(responseContent);
+            var apiTechnology = JsonConvert.DeserializeObject<TechnologyResponseObject>(responseContent);
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.Created);
-        }   
+            var dbTechnology = await _dbFixture.DynamoDbContext.LoadAsync<TechnologyDbEntity>(apiTechnology.Id)
+                                                               .ConfigureAwait(false);
+            request.Should().BeEquivalentTo(dbTechnology, c => c.Excluding(x => x.Id));
+            // cleanup
+            _cleanupActions.Add(() => _dbFixture.DynamoDbContext.DeleteAsync<TechnologyDbEntity>(apiTechnology.Id));
+            content.Dispose();
+        }
+
+        // TODO: Add validation tests
     }
 }

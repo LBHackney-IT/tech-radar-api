@@ -1,7 +1,7 @@
 service: tech-radar-api
 provider:
   name: aws
-  runtime: dotnetcore3.1
+  runtime: dotnet6
   memorySize: 2048
   tracing:
     lambda: true
@@ -12,7 +12,7 @@ provider:
   region: eu-west-2
 
 package:
-  artifact: ./bin/release/netcoreapp3.1/tech-radar-api.zip
+  artifact: ./bin/release/net6.0/tech-radar-api.zip
 
 functions:
   TechRadarApi:

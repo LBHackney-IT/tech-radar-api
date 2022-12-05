@@ -1,10 +1,13 @@
-using AutoFixture;
-using FluentAssertions;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
+using AutoFixture;
+using FluentAssertions;
+using Hackney.Core.Testing.DynamoDb;
+using Newtonsoft.Json;
 using TechRadarApi.V1.Boundary.Response;
 using TechRadarApi.V1.Domain;
 using TechRadarApi.V1.Factories;
@@ -19,24 +22,14 @@ namespace TechRadarApi.Tests.V1.E2ETests
 
         private readonly Fixture _fixture = new Fixture();
         public TechnologyDbEntity Technology { get; private set; }
-        private readonly DynamoDbIntegrationTests<Startup> _dbFixture;
+        private readonly IDynamoDbFixture _dbFixture;
+        private readonly HttpClient _client;
         private readonly List<Action> _cleanupActions = new List<Action>();
 
-        public GetAllEndToEndTests(DynamoDbIntegrationTests<Startup> dbFixture)
+        public GetAllEndToEndTests(AwsMockWebApplicationFactory<Startup> appFactory)
         {
-            _dbFixture = dbFixture;
-        }
-
-        private Technology ConstructTestEntity()
-        {
-            var entity = _fixture.Create<Technology>();
-            return entity;
-        }
-
-        private async Task SaveTestData(Technology entity)
-        {
-            await _dbFixture.DynamoDbContext.SaveAsync(entity.ToDatabase()).ConfigureAwait(false);
-            _cleanupActions.Add(async () => await _dbFixture.DynamoDbContext.DeleteAsync<TechnologyDbEntity>(entity.Id.ToString()).ConfigureAwait(false));
+            _dbFixture = appFactory.DynamoDbFixture;
+            _client = appFactory.Client;
         }
 
         public void Dispose()
@@ -50,6 +43,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
         {
             if (disposing && !_disposed)
             {
+                _dbFixture.Dispose();
                 foreach (var action in _cleanupActions)
                     action();
 
@@ -57,19 +51,34 @@ namespace TechRadarApi.Tests.V1.E2ETests
             }
         }
 
+        private List<Technology> CreateAndInsertTechnologies(int count)
+        {
+            var technologies = new List<Technology>();
+
+            for (int i = 0; i < count; i++)
+            {
+                var technology = _fixture.Create<TechnologyDbEntity>();
+                _dbFixture.SaveEntityAsync(technology).GetAwaiter().GetResult();
+                technologies.Add(technology.ToDomain());
+            }
+
+            return technologies;
+        }
+
+
         [Fact]
         public async Task GetAllTechnologiesReturnsOKResponse()
         {
             // Arrange
-            var entity = ConstructTestEntity();
-            await SaveTestData(entity).ConfigureAwait(false);
-            var technologies = new List<TechnologyResponseObject>();
-            technologies.Add(entity.ToResponse());
-            var expectedResponse = new TechnologyResponseObjectList { Technologies = technologies };
+            var technologies = CreateAndInsertTechnologies(5);
+            var expectedResponse = new TechnologyResponseObjectList
+            {
+                Technologies = technologies.Select(x => x.ToResponse()).ToList()
+            };
 
             // Act
             var uri = new Uri($"api/v1/technologies", UriKind.Relative);
-            var response = await _dbFixture.Client.GetAsync(uri).ConfigureAwait(false);
+            var response = await _client.GetAsync(uri).ConfigureAwait(false);
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var actualResponse = JsonConvert.DeserializeObject<TechnologyResponseObjectList>(responseContent);
 
@@ -84,7 +93,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
             // Arrange
             var uri = new Uri($"api/v1/technologies", UriKind.Relative);
             // Act
-            var response = await _dbFixture.Client.GetAsync(uri).ConfigureAwait(false);
+            var response = await _client.GetAsync(uri).ConfigureAwait(false);
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
         }

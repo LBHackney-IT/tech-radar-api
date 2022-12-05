@@ -4,8 +4,10 @@ services:
   tech-radar-api:
     image: tech-radar-api
     build:
-      context: TechRadarApi/
-      dockerfile: ./Dockerfile
+     context: .
+     dockerfile: TechRadarApi/Dockerfile
+     args:
+      - LBHPACKAGESTOKEN=${LBHPACKAGESTOKEN}
     ports:
       - 3000:3000
     environment:
@@ -22,6 +24,9 @@ services:
     build:
       context: .
       dockerfile: TechRadarApi.Tests/Dockerfile
+      args:
+        - LBHPACKAGESTOKEN=${LBHPACKAGESTOKEN}
+
     environment:
       - DynamoDb_LocalMode=true
       - DynamoDb_LocalServiceUrl=http://dynamodb-database:8000

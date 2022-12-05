@@ -10,15 +10,16 @@ namespace TechRadarApi.V1.UseCase
     public class PostNewTechnologyUseCase : IPostNewTechnologyUseCase
     {
         private ITechnologyGateway _gateway;
-        
+
         public PostNewTechnologyUseCase(ITechnologyGateway gateway)
         {
             _gateway = gateway;
         }
+
         public async Task<TechnologyResponseObject> Execute(CreateTechnologyRequest createTechnologyRequest)
         {
-           var technology = await _gateway.PostNewTechnology(createTechnologyRequest).ConfigureAwait(false);
-           return technology.ToResponse(); 
+            var technology = await _gateway.PostNewTechnology(createTechnologyRequest).ConfigureAwait(false);
+            return technology.ToResponse();
         }
 
     }

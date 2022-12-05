@@ -13,6 +13,7 @@ using TechRadarApi.V1.Factories;
 
 namespace TechRadarApi.Tests.V1.UseCase
 {
+    [Collection("LogCall collection")]
     public class PostNewTechnologyUseCaseTests
     {
         private readonly Mock<ITechnologyGateway> _mockGateway;
@@ -25,7 +26,7 @@ namespace TechRadarApi.Tests.V1.UseCase
             _classUnderTest = new PostNewTechnologyUseCase(_mockGateway.Object);
             _fixture = new Fixture();
         }
-        
+
         [Fact]
         public async Task PostNewTechnologyByIdAsyncReturnsResponse()
         {
@@ -48,19 +49,18 @@ namespace TechRadarApi.Tests.V1.UseCase
         {
             //Arrange
             var technologyRequest = new CreateTechnologyRequest();
-            
+
             var exception = new ApplicationException("Test Exception");
             _mockGateway.Setup(x => x.PostNewTechnology(technologyRequest)).ThrowsAsync(exception);
 
-            //Act
-           
-            Func<Task<TechnologyResponseObject>> func = async () => await _classUnderTest.Execute(technologyRequest).ConfigureAwait(false);
-
-            //Assert
-            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
+            //Act + Assert
+            _classUnderTest.Invoking(x => x.Execute(technologyRequest))
+                           .Should()
+                           .ThrowAsync<ApplicationException>()
+                           .WithMessage(exception.Message);
 
         }
-        
+
     }
-    
+
 }
