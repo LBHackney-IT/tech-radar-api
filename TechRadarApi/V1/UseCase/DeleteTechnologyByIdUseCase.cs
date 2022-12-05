@@ -19,11 +19,7 @@ namespace TechRadarApi.V1.UseCase
             var technology = await _gateway.GetTechnologyById(id).ConfigureAwait(false);
             if (technology == null) return null;
 
-            // var tech = technology.Find(x => x.Id == TechnologyResponseObject.Id);
-
-            technology.Remove();
-            
-            await _gateway.SaveTechRadar(technology);
+            await _gateway.DeleteTechnologyById(technology).ConfigureAwait(false);
 
             return technology?.ToResponse();
         }

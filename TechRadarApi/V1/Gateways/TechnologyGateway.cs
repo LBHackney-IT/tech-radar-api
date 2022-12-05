@@ -31,6 +31,11 @@ namespace TechRadarApi.V1.Gateways
             return result?.ToDomain();
         }
 
+        public async Task DeleteTechnologyById(Technology technology)
+        {
+            await _dynamoDbContext.DeleteAsync<TechnologyDbEntity>(technology).ConfigureAwait(false);
+        }
+
         public async Task SaveTechRadar(Technology technology)
         {
             var databaseTechnology = technology.ToDatabase();

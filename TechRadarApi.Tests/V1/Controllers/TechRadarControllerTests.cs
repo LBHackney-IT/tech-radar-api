@@ -19,7 +19,7 @@ namespace TechRadarApi.Tests.V1.Controllers
         private readonly Mock<IGetTechnologyByIdUseCase> _mockGetByIdUsecase;
         private readonly Mock<IGetAllTechnologiesUseCase> _mockGetAllUsecase;
         private readonly Mock<IDeleteTechnologyByIdUseCase> _mockDeleteByIdUsecase;
-        
+
         private readonly Fixture _fixture = new Fixture();
 
         public TechRadarApiControllerFacts()
