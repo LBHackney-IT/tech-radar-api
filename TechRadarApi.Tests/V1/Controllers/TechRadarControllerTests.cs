@@ -114,5 +114,47 @@ namespace TechRadarApi.Tests.V1.Controllers
             // Assert
             func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
         }
+
+        [Fact]
+        public async Task DeleteTechnologyReturnsOkResponse()
+        {
+            var query = DeletionQuery();
+            var TechnologyResponse = _fixture.Create<TechnologyResponseObject>();
+
+            _mockDeleteByIdUsecase.Setup(x => x.Execute(query.Id)).ReturnsAsync(TechnologyResponse);
+
+            var response = await _classUnderTest.DeleteTechnology(query.Id).ConfigureAwait(false);
+            response.Should().BeOfType(typeof(OkObjectResult));
+            (response as OkObjectResult).Value.Should().BeEquivalentTo(TechnologyResponse);
+
+        }
+
+        [Fact]
+        public async Task DeleteTechnologyReturnsNotFound()
+        {
+            var query = DeletionQuery();
+            _mockDeleteByIdUsecase.Setup(x => x.Execute(query.Id)).ReturnsAsync((TechnologyResponseObject) null);
+
+            var response = await _classUnderTest.DeleteTechnology(query.Id).ConfigureAwait(false);
+            response.Should().BeOfType(typeof(NotFoundObjectResult));
+        }
+
+        [Fact]
+        public void DeleteTechnologyThrowsException()
+        {
+            var query = DeletionQuery();
+            var exception = new ApplicationException("Test exception");
+            _mockDeleteByIdUsecase.Setup(x => x.Execute(query.Id)).ThrowsAsync(exception);
+
+            Func<Task<IActionResult>> func = async () => await _classUnderTest.DeleteTechnology(query.Id).ConfigureAwait(false);
+
+            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
+
+        }
+
+        private static TechnologyResponseObject DeletionQuery()
+        {
+            return new TechnologyResponseObject() { Id = Guid.NewGuid(), Name = "TestTechnology" };
+        }
     }
 }
