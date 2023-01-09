@@ -4,6 +4,8 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using TechRadarApi.V1.Boundary.Response;
 using TechRadarApi.V1.Domain;
@@ -14,7 +16,7 @@ using Xunit;
 namespace TechRadarApi.Tests.V1.E2ETests
 {
     [Collection("DynamoDb collection")]
-    public class DeleteByIdEndToEndTests : IDisposable
+    public class DeleteByIdEndToEndTests
     {
 
         private readonly Fixture _fixture = new Fixture();
@@ -39,12 +41,6 @@ namespace TechRadarApi.Tests.V1.E2ETests
             _cleanupActions.Add(async () => await _dbFixture.DynamoDbContext.DeleteAsync<TechnologyDbEntity>(entity.Id.ToString()).ConfigureAwait(false));
         }
 
-        public void Dispose()
-        {
-            Dispose();
-            GC.SuppressFinalize(this);
-        }
-
         [Fact]
         public async Task DeleteTechnologyByIdDeletesTechnology()
         {
@@ -66,15 +62,23 @@ namespace TechRadarApi.Tests.V1.E2ETests
             actualResponse.Should().BeEquivalentTo(expectedResponse);
         }
 
-        // [Fact]
-        // public async Task DeleteTechnologyByIdReturnsNotFoundResponse()
-        // {
-        //     // Arrange
-        //     var entity = ConstructTestEntity();
-        //     await SaveTestData(entity).ConfigureAwait(false);
-        //     var technologies = new List<TechnologyResponseObject>();
-        //     technologies.Add(entity.ToResponse());
-        //     var expectedResponse = new TechnologyResponseObjectList { Technologies = technologies };
-        // }
+        [Fact]
+        public async Task DeleteTechnologyByIdReturnsNotFoundResponse()
+        {
+             // Arrange
+            var entity = ConstructTestEntity();
+            var uri = new Uri($"api/v1/technologies/{entity.Id}", UriKind.Relative);
+            var bodyParameters = _fixture.Create<TechnologyResponseObject>();
+
+            // Act
+            
+            var message = new HttpRequestMessage(HttpMethod.Delete, uri);
+            message.Content = new StringContent(JsonConvert.SerializeObject(bodyParameters), Encoding.UTF8, "application/json");
+            var httpResponse = await _dbFixture.Client.SendAsync(message).ConfigureAwait(false);
+
+            // Assert
+            httpResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            message.Dispose();
+        }
     }
 }
