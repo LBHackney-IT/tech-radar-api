@@ -44,34 +44,50 @@ namespace TechRadarApi.Tests.V1.E2ETests
         [Fact]
         public async Task DeleteTechnologyByIdDeletesTechnology()
         {
+            //// Arrange
+            //var entity = ConstructTestEntity();
+            //await SaveTestData(entity).ConfigureAwait(false);
+            //var technologies = new List<TechnologyResponseObject>();
+            //technologies.Add(entity.ToResponse());
+            //// var expectedResponse = new TechnologyResponseObjectList { Technologies = technologies };
+
+            //// Act
+            //var uri = new Uri($"api/v1/technologies/{entity.Id}", UriKind.Relative);
+            //var response = await _dbFixture.Client.DeleteAsync(uri).ConfigureAwait(false);
+            //// var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            //// var actualResponse = JsonConvert.DeserializeObject<TechnologyResponseObjectList>(responseContent);
+
+            //// Assert
+            //response.StatusCode.Should().Be(HttpStatusCode.OK);
+            //// actualResponse.Should().BeEquivalentTo(expectedResponse);
+            ///
             // Arrange
             var entity = ConstructTestEntity();
             await SaveTestData(entity).ConfigureAwait(false);
-            var technologies = new List<TechnologyResponseObject>();
-            technologies.Add(entity.ToResponse());
-            var expectedResponse = new TechnologyResponseObjectList { Technologies = technologies };
+            var uri = new Uri($"api/v1/technologies/{entity.Id}", UriKind.Relative);
+            var bodyParameters = _fixture.Create<TechnologyResponseObject>();
 
             // Act
-            var uri = new Uri($"api/v1/technologies", UriKind.Relative);
-            var response = await _dbFixture.Client.GetAsync(uri).ConfigureAwait(false);
-            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var actualResponse = JsonConvert.DeserializeObject<TechnologyResponseObjectList>(responseContent);
+
+            var message = new HttpRequestMessage(HttpMethod.Delete, uri);
+            message.Content = new StringContent(JsonConvert.SerializeObject(bodyParameters), Encoding.UTF8, "application/json");
+            var httpResponse = await _dbFixture.Client.SendAsync(message).ConfigureAwait(false);
 
             // Assert
-            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-            actualResponse.Should().BeEquivalentTo(expectedResponse);
+            httpResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            message.Dispose();
         }
 
         [Fact]
         public async Task DeleteTechnologyByIdReturnsNotFoundResponse()
         {
-             // Arrange
+            // Arrange
             var entity = ConstructTestEntity();
             var uri = new Uri($"api/v1/technologies/{entity.Id}", UriKind.Relative);
             var bodyParameters = _fixture.Create<TechnologyResponseObject>();
 
             // Act
-            
+
             var message = new HttpRequestMessage(HttpMethod.Delete, uri);
             message.Content = new StringContent(JsonConvert.SerializeObject(bodyParameters), Encoding.UTF8, "application/json");
             var httpResponse = await _dbFixture.Client.SendAsync(message).ConfigureAwait(false);

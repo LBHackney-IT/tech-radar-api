@@ -136,7 +136,7 @@ namespace TechRadarApi.Tests.V1.Controllers
             _mockDeleteByIdUsecase.Setup(x => x.Execute(query.Id)).ReturnsAsync((TechnologyResponseObject) null);
 
             var response = await _classUnderTest.DeleteTechnology(query.Id).ConfigureAwait(false);
-            response.Should().BeOfType(typeof(NotFoundObjectResult));
+            response.Should().BeOfType(typeof(NotFoundResult));
         }
 
         [Fact]
