@@ -44,24 +44,9 @@ namespace TechRadarApi.Tests.V1.E2ETests
         [Fact]
         public async Task DeleteTechnologyByIdDeletesTechnology()
         {
-            //// Arrange
-            //var entity = ConstructTestEntity();
-            //await SaveTestData(entity).ConfigureAwait(false);
-            //var technologies = new List<TechnologyResponseObject>();
-            //technologies.Add(entity.ToResponse());
-            //// var expectedResponse = new TechnologyResponseObjectList { Technologies = technologies };
-
-            //// Act
-            //var uri = new Uri($"api/v1/technologies/{entity.Id}", UriKind.Relative);
-            //var response = await _dbFixture.Client.DeleteAsync(uri).ConfigureAwait(false);
-            //// var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            //// var actualResponse = JsonConvert.DeserializeObject<TechnologyResponseObjectList>(responseContent);
-
-            //// Assert
-            //response.StatusCode.Should().Be(HttpStatusCode.OK);
-            //// actualResponse.Should().BeEquivalentTo(expectedResponse);
-            ///
             // Arrange
+            var token =
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMTUwMTgxMTYwOTIwOTg2NzYxMTMiLCJlbWFpbCI6ImUyZS10ZXN0aW5nQGRldmVsb3BtZW50LmNvbSIsImlzcyI6IkhhY2tuZXkiLCJuYW1lIjoiVGVzdGVyIiwiZ3JvdXBzIjpbImUyZS10ZXN0aW5nIl0sImlhdCI6MTYyMzA1ODIzMn0.SooWAr-NUZLwW8brgiGpi2jZdWjyZBwp4GJikn0PvEw";
             var entity = ConstructTestEntity();
             await SaveTestData(entity).ConfigureAwait(false);
             var uri = new Uri($"api/v1/technologies/{entity.Id}", UriKind.Relative);
@@ -70,6 +55,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
             // Act
 
             var message = new HttpRequestMessage(HttpMethod.Delete, uri);
+            message.Headers.Add("Authorization", token);
             message.Content = new StringContent(JsonConvert.SerializeObject(bodyParameters), Encoding.UTF8, "application/json");
             var httpResponse = await _dbFixture.Client.SendAsync(message).ConfigureAwait(false);
 
