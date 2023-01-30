@@ -60,7 +60,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
             var httpResponse = await _dbFixture.Client.SendAsync(message).ConfigureAwait(false);
 
             // Assert
-            httpResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            httpResponse.StatusCode.Should().Be(HttpStatusCode.OK);
             message.Dispose();
         }
 
