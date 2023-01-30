@@ -43,9 +43,9 @@ namespace TechRadarApi.Tests.V1.UseCase
         //{
         //    var technology = _fixture.Create<Technology>();
         //    var query = _fixture.Build<TechnologyResponseObject>().With(x => x.Id).Create();
-            
-            // will pass once post endpoint is created
-            // _mockGateway.Setup(x => x.PostTechnologyById(technology));
+
+        // will pass once post endpoint is created
+        // _mockGateway.Setup(x => x.PostTechnologyById(technology));
 
         //    var response = await _classUnderTest.Execute(query.Id).ConfigureAwait(false);
         //    response.Should().BeOfType(typeof(NoContentResult));
