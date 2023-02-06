@@ -41,16 +41,16 @@ namespace TechRadarApi.Tests.V1.UseCase
         [Fact]
         public async Task DeleteTechnologyByIdUseCaseReturnsOkResponse()
         {
-           var technology = _fixture.Create<Technology>();
-           var dbTechnology = _fixture.Create<TechnologyDbEntity>();
-           var query = _fixture.Build<TechnologyResponseObject>().With(x => x.Id).Create();
+            var technology = _fixture.Create<Technology>();
+            var dbTechnology = _fixture.Create<TechnologyDbEntity>();
+            var query = _fixture.Build<TechnologyResponseObject>().With(x => x.Id).Create();
 
             technology.ToDatabase();
 
-           _mockGateway.Setup(x => x.GetTechnologyById(query.Id)).ReturnsAsync(technology);
+            _mockGateway.Setup(x => x.GetTechnologyById(query.Id)).ReturnsAsync(technology);
 
-           var response = await _classUnderTest.Execute(query.Id).ConfigureAwait(false);
-           response.Should().BeOfType(typeof(TechnologyResponseObject));
+            var response = await _classUnderTest.Execute(query.Id).ConfigureAwait(false);
+            response.Should().BeOfType(typeof(TechnologyResponseObject));
         }
     }
 }
