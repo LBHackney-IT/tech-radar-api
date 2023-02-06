@@ -61,7 +61,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
 
             // Assert
             httpResponse.StatusCode.Should().Be(HttpStatusCode.OK);
-            httpResponse.Content.Equals(typeof (TechnologyResponseObject));
+            httpResponse.Content.Equals(typeof(TechnologyResponseObject));
             message.Dispose();
         }
 
