@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
 using Microsoft.AspNetCore.Mvc;
+using TechRadarApi.V1.Infrastructure;
 
 namespace TechRadarApi.Tests.V1.UseCase
 {
@@ -37,18 +38,19 @@ namespace TechRadarApi.Tests.V1.UseCase
             response.Should().BeNull();
         }
 
-        // TODO: complete once the post endpoint is done
-        //[Fact]
-        //public async Task DeleteTechnologyByIdUseCaseReturnsOkResponse()
-        //{
-        //    var technology = _fixture.Create<Technology>();
-        //    var query = _fixture.Build<TechnologyResponseObject>().With(x => x.Id).Create();
+        [Fact]
+        public async Task DeleteTechnologyByIdUseCaseReturnsOkResponse()
+        {
+           var technology = _fixture.Create<Technology>();
+           var dbTechnology = _fixture.Create<TechnologyDbEntity>();
+           var query = _fixture.Build<TechnologyResponseObject>().With(x => x.Id).Create();
 
-        // will pass once post endpoint is created
-        // _mockGateway.Setup(x => x.PostTechnologyById(technology));
+            technology.ToDatabase();
 
-        //    var response = await _classUnderTest.Execute(query.Id).ConfigureAwait(false);
-        //    response.Should().BeOfType(typeof(NoContentResult));
-        //}
+           _mockGateway.Setup(x => x.GetTechnologyById(query.Id)).ReturnsAsync(technology);
+
+           var response = await _classUnderTest.Execute(query.Id).ConfigureAwait(false);
+           response.Should().BeOfType(typeof(TechnologyResponseObject));
+        }
     }
 }
