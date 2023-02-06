@@ -19,6 +19,8 @@ namespace TechRadarApi.Tests.V1.Controllers
         private readonly Mock<IGetTechnologyByIdUseCase> _mockGetByIdUsecase;
         private readonly Mock<IGetAllTechnologiesUseCase> _mockGetAllUsecase;
         private readonly Mock<IDeleteTechnologyByIdUseCase> _mockDeleteByIdUsecase;
+        private readonly Mock<IPatchTechnologyByIdUseCase> _mockPatchTechnologyByIdUseCase;
+
 
         private readonly Fixture _fixture = new Fixture();
 
@@ -151,6 +153,43 @@ namespace TechRadarApi.Tests.V1.Controllers
             func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
 
         }
+
+        [Fact]
+        public async Task UpdateTechnologyAsyncReturnsNoContentResponse()
+        {
+            // Arrange
+            (var pathParameters, var bodyParameters) = ConstructUpdateApplicationQuery();
+            var technology = _fixture.Create<Technology>();
+            _mockPatchTechnologyByIdUseCase.Setup(x => x.Execute(pathParameters, bodyParameters)).ReturnsAsync((Technology) technology);
+
+            // Act
+            var response = await _classUnderTest.PatchApplication(pathParameters, bodyParameters).ConfigureAwait(false);
+
+            // Assert
+            response.Should().BeOfType(typeof(NoContentResult));
+        }
+        [Fact]
+        public async Task UpdateTechnologyAsyncNotFoundReturnsNotFound()
+        {
+            // Arrange
+            (var pathParameters, var bodyParameters) = ConstructUpdateTechnologyQuery();
+            _mockPatchTechnologyByIdUseCase.Setup(x => x.Execute(pathParameters, bodyParameters)).ReturnsAsync((Technology) null);
+
+            // Act
+            var response = await _classUnderTest.PatchTechnology(pathParameters, bodyParameters).ConfigureAwait(false);
+
+            // Assert
+            response.Should().BeOfType(typeof(NotFoundObjectResult));
+            (response as NotFoundObjectResult).Value.Should().Be(pathParameters.Id);
+        }
+
+          private (PatchTechnologyByIdRequest, PatchTechnologyListItem) ConstructUpdateTechnologyQuery()
+        {
+            var pathParameters = _fixture.Create<PatchTechnologyByIdRequest>();
+            var bodyParameters = _fixture.Create<PatchTechnologyListItem>();
+            return (pathParameters, bodyParameters);
+        }
+
 
         private static TechnologyResponseObject DeletionQuery()
         {
