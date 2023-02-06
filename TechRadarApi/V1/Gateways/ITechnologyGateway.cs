@@ -10,5 +10,9 @@ namespace TechRadarApi.V1.Gateways
         Task<Technology> GetTechnologyById(Guid id);
 
         Task<List<Technology>> GetAll();
+
+        Task DeleteTechnologyById(Technology technology);
+
+        Task SaveTechRadar(Technology technology);
     }
 }

@@ -15,10 +15,12 @@ namespace TechRadarApi.V1.Controllers
     {
         private readonly IGetAllTechnologiesUseCase _getAllUseCase;
         private readonly IGetTechnologyByIdUseCase _getByIdUseCase;
-        public TechRadarApiController(IGetAllTechnologiesUseCase getAllUseCase, IGetTechnologyByIdUseCase getByIdUseCase)
+        private readonly IDeleteTechnologyByIdUseCase _deleteTechnologyByIdUseCase;
+        public TechRadarApiController(IGetAllTechnologiesUseCase getAllUseCase, IGetTechnologyByIdUseCase getByIdUseCase, IDeleteTechnologyByIdUseCase deleteTechnologyByIdUseCase)
         {
             _getAllUseCase = getAllUseCase;
             _getByIdUseCase = getByIdUseCase;
+            _deleteTechnologyByIdUseCase = deleteTechnologyByIdUseCase;
         }
 
         [ProducesResponseType(typeof(TechnologyResponseObjectList), StatusCodes.Status200OK)]
@@ -41,5 +43,18 @@ namespace TechRadarApi.V1.Controllers
             if (result == null) return NotFound(Id);
             return Ok(result);
         }
+
+        [ProducesResponseType(typeof(TechnologyResponseObject), StatusCodes.Status200OK)]
+        [HttpDelete]
+        [Route("{id}")]
+
+        public async Task<IActionResult> DeleteTechnology(Guid Id)
+        {
+            var response = await _deleteTechnologyByIdUseCase.Execute(Id).ConfigureAwait(false);
+            if (response == null) return NotFound();
+
+            return Ok(response);
+        }
+
     }
 }

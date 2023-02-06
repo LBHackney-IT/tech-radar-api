@@ -147,6 +147,7 @@ namespace TechRadarApi
         {
             services.AddScoped<IGetAllTechnologiesUseCase, GetAllTechnologiesUseCase>();
             services.AddScoped<IGetTechnologyByIdUseCase, GetTechnologyByIdUseCase>();
+            services.AddScoped<IDeleteTechnologyByIdUseCase, DeleteTechnologyByIdUseCase>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
