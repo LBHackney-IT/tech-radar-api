@@ -32,7 +32,6 @@ namespace TechRadarApi.Tests.V1.E2ETests
 
         public void Dispose()
         {
-            _dbFixture?.Dispose();
             Dispose(true);
             GC.SuppressFinalize(this);
         }
@@ -50,7 +49,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
         }
 
         [Fact]
-        public async Task GetTechnologyByValidIdReturnsOKResponse()
+        public async Task GetTechnologyByValidIdReturnsOkResponse()
         {
             // Arrange
             var entity = _fixture.Create<Technology>();

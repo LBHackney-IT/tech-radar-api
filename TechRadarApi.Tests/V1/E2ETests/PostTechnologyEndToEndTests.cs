@@ -34,22 +34,20 @@ namespace TechRadarApi.Tests.V1.E2ETests
             _client = appFactory.Client;
         }
 
-
         public void Dispose()
         {
-            _dbFixture?.Dispose();
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
         private bool _disposed;
+
         protected virtual void Dispose(bool disposing)
         {
             if (disposing && !_disposed)
             {
                 foreach (var action in _cleanupActions)
                     action();
-
                 _disposed = true;
             }
         }

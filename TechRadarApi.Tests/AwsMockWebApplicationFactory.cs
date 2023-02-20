@@ -43,7 +43,7 @@ namespace TechRadarApi.Tests
             {
                 DynamoDbFixture?.Dispose();
                 Client?.Dispose();
-                // base.Dispose(true);
+                base.Dispose(true);
                 _disposed = true;
             }
         }

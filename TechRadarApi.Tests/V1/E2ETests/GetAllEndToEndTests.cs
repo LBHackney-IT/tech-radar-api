@@ -43,7 +43,6 @@ namespace TechRadarApi.Tests.V1.E2ETests
         {
             if (disposing && !_disposed)
             {
-                _dbFixture.Dispose();
                 foreach (var action in _cleanupActions)
                     action();
 
@@ -51,26 +50,29 @@ namespace TechRadarApi.Tests.V1.E2ETests
             }
         }
 
-        private List<Technology> CreateAndInsertTechnologies(int count)
+        private async Task<List<Technology>> CreateAndInsertTechnologies(int count)
         {
-            var technologies = new List<Technology>();
+            var technologies = _fixture.CreateMany<TechnologyDbEntity>(count).ToList();
+            var output = new List<Technology>();
 
-            for (int i = 0; i < count; i++)
+            var tasks = technologies.Select(async technology =>
             {
-                var technology = _fixture.Create<TechnologyDbEntity>();
-                _dbFixture.SaveEntityAsync(technology).GetAwaiter().GetResult();
-                technologies.Add(technology.ToDomain());
-            }
+                await _dbFixture.DynamoDbContext.SaveAsync(technology).ConfigureAwait(false);
+                _cleanupActions.Add((() => _dbFixture.DynamoDbContext.DeleteAsync(technology)));
+                output.Add(technology.ToDomain());
+            });
 
-            return technologies;
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            return output;
         }
 
 
         [Fact]
-        public async Task GetAllTechnologiesReturnsOKResponse()
+        public async Task GetAllTechnologiesReturnsOkResponse()
         {
             // Arrange
-            var technologies = CreateAndInsertTechnologies(5);
+            var technologies = await CreateAndInsertTechnologies(5).ConfigureAwait(false);
             var expectedResponse = new TechnologyResponseObjectList
             {
                 Technologies = technologies.Select(x => x.ToResponse()).ToList()
@@ -88,7 +90,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
         }
 
         [Fact]
-        public async Task GetAllTechnologiesReturnsOKResponseWhenTheTableIsEmpty()
+        public async Task GetAllTechnologiesReturnsOkResponseWhenTheTableIsEmpty()
         {
             // Arrange
             var uri = new Uri($"api/v1/technologies", UriKind.Relative);

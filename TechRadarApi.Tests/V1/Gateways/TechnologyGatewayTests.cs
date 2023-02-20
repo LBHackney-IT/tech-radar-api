@@ -29,6 +29,7 @@ namespace TechRadarApi.Tests.V1.Gateways
             _dbFixture = appFactory.DynamoDbFixture;
             _classUnderTest = new TechnologyGateway(_dbFixture.DynamoDbContext);
         }
+
         public void Dispose()
         {
             Dispose(true);
@@ -40,7 +41,6 @@ namespace TechRadarApi.Tests.V1.Gateways
         {
             if (disposing && !_disposed)
             {
-                _dbFixture.Dispose();
                 foreach (var action in _cleanup)
                     action();
 
@@ -71,18 +71,21 @@ namespace TechRadarApi.Tests.V1.Gateways
             response.Should().BeEquivalentTo(entity);
         }
 
-        private List<TechnologyDbEntity> CreateAndInsertTechnologies(int count)
+        private async Task<List<Technology>> CreateAndInsertTechnologies(int count)
         {
-            var technologies = new List<TechnologyDbEntity>();
+            var technologies = _fixture.CreateMany<TechnologyDbEntity>(count).ToList();
+            var output = new List<Technology>();
 
-            for (int i = 0; i < count; i++)
+            var tasks = technologies.Select(async technology =>
             {
-                var technology = _fixture.Create<TechnologyDbEntity>();
-                _dbFixture.SaveEntityAsync(technology).GetAwaiter().GetResult();
-                technologies.Add(technology);
-            }
+                await _dbFixture.DynamoDbContext.SaveAsync(technology).ConfigureAwait(false);
+                _cleanup.Add((() => _dbFixture.DynamoDbContext.DeleteAsync(technology)));
+                output.Add(technology.ToDomain());
+            });
 
-            return technologies;
+            await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            return output;
         }
 
         [Fact]
@@ -98,8 +101,7 @@ namespace TechRadarApi.Tests.V1.Gateways
         public async Task GetAllTechnologiesReturnsAnArrayOfAllTechnologiesInTheTable()
         {
             // Arrange
-            var technologies = CreateAndInsertTechnologies(5);
-            var expectedResult = technologies.Select(x => x.ToDomain()).ToList();
+            var expectedResult = await CreateAndInsertTechnologies(3).ConfigureAwait(false);
             // Act
             var response = await _classUnderTest.GetAll().ConfigureAwait(false);
             // Assert
@@ -117,8 +119,7 @@ namespace TechRadarApi.Tests.V1.Gateways
                                                            .ConfigureAwait(false);
             // Assert
             dbEntity.Should().BeEquivalentTo(postRequest.ToDatabase(), c => c.Excluding(x => x.Id));
-            _cleanup.Add(async () => await _dbFixture.DynamoDbContext.DeleteAsync<TechnologyDbEntity>(dbEntity.Id)
-                                                                     .ConfigureAwait(false));
+            _cleanup.Add(() => _dbFixture.DynamoDbContext.DeleteAsync<TechnologyDbEntity>(dbEntity.Id));
         }
     }
 }
