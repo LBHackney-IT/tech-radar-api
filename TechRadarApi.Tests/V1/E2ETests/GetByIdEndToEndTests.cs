@@ -14,7 +14,7 @@ using Xunit;
 
 namespace TechRadarApi.Tests.V1.E2ETests
 {
-    [Collection("DynamoDb collection")]
+    [Collection("DynamoDb Collection")]
     public class GetByIdEndToEndTests : IDisposable
     {
 
@@ -53,6 +53,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
         {
             // Arrange
             var entity = _fixture.Create<Technology>();
+
             await _dbFixture.SaveEntityAsync<TechnologyDbEntity>(entity.ToDatabase()).ConfigureAwait(false);
             var uri = new Uri($"api/v1/technologies/{entity.Id}", UriKind.Relative);
 

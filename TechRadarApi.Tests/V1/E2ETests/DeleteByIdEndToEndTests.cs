@@ -15,7 +15,7 @@ using Xunit;
 
 namespace TechRadarApi.Tests.V1.E2ETests
 {
-    [Collection("DynamoDb collection")]
+    [Collection("DynamoDb Collection")]
     public class DeleteByIdEndToEndTests : IDisposable
     {
 

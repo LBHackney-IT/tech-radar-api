@@ -31,6 +31,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using TechRadarApi.V1.Boundary.Request;
 using TechRadarApi.V1.Infrastructure;
 using TechRadarApi.Versioning;
 using TechRadarApi.V1.Gateways;
@@ -56,6 +57,8 @@ namespace TechRadarApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddFluentValidation(Assembly.GetAssembly(typeof(CreateTechnologyRequestValidator)));
+
             services.AddCors();
             services.AddHttpClient();
             services.AddApiGateway();

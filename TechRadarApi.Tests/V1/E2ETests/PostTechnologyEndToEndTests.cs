@@ -18,7 +18,7 @@ using Xunit;
 
 namespace TechRadarApi.Tests.V1.E2ETests
 {
-    [Collection("DynamoDb collection")]
+    [Collection("DynamoDb Collection")]
     public class PostTechnologyEndToEndTests : IDisposable
     {
 
@@ -75,6 +75,24 @@ namespace TechRadarApi.Tests.V1.E2ETests
             content.Dispose();
         }
 
-        // TODO: Add validation tests
+        [Fact]
+        public async Task PostTechnologyReturnsBadRequestIfRequestIsInvalid()
+        {
+            // Arrange
+            var request = _fixture.Create<CreateTechnologyRequest>();
+            request.Description = "<string with tags>";
+
+            var uri = new Uri("api/v1/technologies", UriKind.Relative);
+            var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+
+            //Act
+            var response = await _client.PostAsync(uri, content).ConfigureAwait(false);
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            var apiTechnology = JsonConvert.DeserializeObject<TechnologyResponseObject>(responseContent);
+
+            // Assert
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            content.Dispose();
+        }
     }
 }

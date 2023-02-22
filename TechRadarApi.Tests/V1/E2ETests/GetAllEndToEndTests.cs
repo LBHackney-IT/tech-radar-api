@@ -16,7 +16,7 @@ using Xunit;
 
 namespace TechRadarApi.Tests.V1.E2ETests
 {
-    [Collection("DynamoDb collection")]
+    [Collection("DynamoDb Collection")]
     public class GetAllEndToEndTests : IDisposable
     {
 
@@ -58,7 +58,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
             var tasks = technologies.Select(async technology =>
             {
                 await _dbFixture.DynamoDbContext.SaveAsync(technology).ConfigureAwait(false);
-                _cleanupActions.Add((() => _dbFixture.DynamoDbContext.DeleteAsync(technology)));
+                _cleanupActions.Add((() => _dbFixture.DynamoDbContext.DeleteAsync(technology).GetAwaiter().GetResult()));
                 output.Add(technology.ToDomain());
             });
 

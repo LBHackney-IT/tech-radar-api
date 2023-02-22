@@ -2,7 +2,7 @@ using Xunit;
 
 namespace TechRadarApi.Tests
 {
-    [CollectionDefinition("DynamoDb collection", DisableParallelization = true)]
+    [CollectionDefinition("DynamoDb Collection", DisableParallelization = true)]
     public class DynamoDbCollection : ICollectionFixture<AwsMockWebApplicationFactory<Startup>>
     {
         // This class has no code, and is never created. Its purpose is simply
