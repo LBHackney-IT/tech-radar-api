@@ -117,13 +117,13 @@ namespace TechRadarApi.Tests.V1.Gateways
             _classUnderTest = new TechnologyGateway(mockDynamoDb.Object);
             var id = Guid.NewGuid();
             var exception = new ApplicationException("Test Exception");
-            mockDynamoDb.Setup(x => x.LoadAsync<TechnologyDbEntity>(id.ToString(), default))
+            mockDynamoDb.Setup(x => x.LoadAsync<TechnologyDbEntity>(id, default))
                      .ThrowsAsync(exception);
             // Act
             Func<Task<Technology>> func = async () => await _classUnderTest.GetTechnologyById(id).ConfigureAwait(false);
             // Assert
             func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
-            mockDynamoDb.Verify(x => x.LoadAsync<TechnologyDbEntity>(id.ToString(), default), Times.Once);
+            mockDynamoDb.Verify(x => x.LoadAsync<TechnologyDbEntity>(id, default), Times.Once);
         }
 
         [Fact]
