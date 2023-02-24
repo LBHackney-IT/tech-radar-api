@@ -10,7 +10,7 @@ namespace TechRadarApi.V1.Factories
         {
             return new Technology
             {
-                Id = Guid.Parse(databaseEntity.Id),
+                Id = databaseEntity.Id,
                 Name = databaseEntity.Name,
                 Description = databaseEntity.Description,
                 Category = databaseEntity.Category,
@@ -22,7 +22,7 @@ namespace TechRadarApi.V1.Factories
         {
             return new TechnologyDbEntity
             {
-                Id = entity.Id.ToString(),
+                Id = entity.Id,
                 Name = entity.Name,
                 Description = entity.Description,
                 Category = entity.Category,

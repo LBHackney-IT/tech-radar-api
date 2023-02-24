@@ -1,9 +1,11 @@
 using AutoFixture;
 using FluentAssertions;
+using Hackney.Core.Testing.DynamoDb;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using TechRadarApi.V1.Domain;
 using TechRadarApi.V1.Factories;
@@ -12,29 +14,20 @@ using Xunit;
 
 namespace TechRadarApi.Tests.V1.E2ETests
 {
-    [Collection("DynamoDb collection")]
+    [Collection("DynamoDb Collection")]
     public class GetByIdEndToEndTests : IDisposable
     {
 
         private readonly Fixture _fixture = new Fixture();
         public TechnologyDbEntity Technology { get; private set; }
-        private readonly DynamoDbIntegrationTests<Startup> _dbFixture;
+        private readonly IDynamoDbFixture _dbFixture;
+        private readonly HttpClient _client;
         private readonly List<Action> _cleanupActions = new List<Action>();
 
-        public GetByIdEndToEndTests(DynamoDbIntegrationTests<Startup> dbFixture)
+        public GetByIdEndToEndTests(AwsMockWebApplicationFactory<Startup> appFactory)
         {
-            _dbFixture = dbFixture;
-        }
-        private Technology ConstructTestEntity()
-        {
-            var entity = _fixture.Create<Technology>();
-            return entity;
-        }
-
-        private async Task SaveTestData(Technology entity)
-        {
-            await _dbFixture.DynamoDbContext.SaveAsync(entity.ToDatabase()).ConfigureAwait(false);
-            _cleanupActions.Add(async () => await _dbFixture.DynamoDbContext.DeleteAsync<TechnologyDbEntity>(entity.Id.ToString()).ConfigureAwait(false));
+            _dbFixture = appFactory.DynamoDbFixture;
+            _client = appFactory.Client;
         }
 
         public void Dispose()
@@ -56,15 +49,16 @@ namespace TechRadarApi.Tests.V1.E2ETests
         }
 
         [Fact]
-        public async Task GetTechnologyByValidIdReturnsOKResponse()
+        public async Task GetTechnologyByValidIdReturnsOkResponse()
         {
             // Arrange
-            var entity = ConstructTestEntity();
-            await SaveTestData(entity).ConfigureAwait(false);
+            var entity = _fixture.Create<Technology>();
+
+            await _dbFixture.SaveEntityAsync<TechnologyDbEntity>(entity.ToDatabase()).ConfigureAwait(false);
             var uri = new Uri($"api/v1/technologies/{entity.Id}", UriKind.Relative);
 
             // Act
-            var response = await _dbFixture.Client.GetAsync(uri).ConfigureAwait(false);
+            var response = await _client.GetAsync(uri).ConfigureAwait(false);
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var apiEntity = JsonConvert.DeserializeObject<Technology>(responseContent);
 
@@ -80,7 +74,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
             var badId = _fixture.Create<int>(); // wrong type, should be a guid
             var uri = new Uri($"api/v1/technologies/{badId}", UriKind.Relative);
             // Act
-            var response = await _dbFixture.Client.GetAsync(uri).ConfigureAwait(false);
+            var response = await _client.GetAsync(uri).ConfigureAwait(false);
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
@@ -92,7 +86,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
             var id = Guid.NewGuid();
             var uri = new Uri($"api/v1/technologies/{id}", UriKind.Relative);
             // Act
-            var response = await _dbFixture.Client.GetAsync(uri).ConfigureAwait(false);
+            var response = await _client.GetAsync(uri).ConfigureAwait(false);
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }

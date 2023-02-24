@@ -1,4 +1,5 @@
 using Amazon.DynamoDBv2.DataModel;
+using System;
 
 namespace TechRadarApi.V1.Infrastructure
 {
@@ -7,7 +8,7 @@ namespace TechRadarApi.V1.Infrastructure
     public class TechnologyDbEntity
     {
         [DynamoDBHashKey]
-        public string Id { get; set; }
+        public Guid Id { get; set; }
 
         [DynamoDBProperty]
         public string Name { get; set; }

@@ -1,6 +1,7 @@
 using TechRadarApi.V1.Controllers;
 using TechRadarApi.V1.UseCase.Interfaces;
 using TechRadarApi.V1.Boundary.Response;
+using TechRadarApi.V1.Boundary.Request;
 using AutoFixture;
 using Moq;
 using Xunit;
@@ -10,10 +11,11 @@ using System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace TechRadarApi.Tests.V1.Controllers
 {
-    public class TechRadarApiControllerFacts
+    public class TechRadarApiControllerTests
     {
         private readonly TechRadarApiController _classUnderTest;
         private readonly Mock<IGetTechnologyByIdUseCase> _mockGetByIdUsecase;
@@ -24,7 +26,7 @@ namespace TechRadarApi.Tests.V1.Controllers
 
         private readonly Fixture _fixture = new Fixture();
 
-        public TechRadarApiControllerFacts()
+        public TechRadarApiControllerTests()
         {
             _mockGetAllUsecase = new Mock<IGetAllTechnologiesUseCase>();
             _mockGetByIdUsecase = new Mock<IGetTechnologyByIdUseCase>();
@@ -33,11 +35,11 @@ namespace TechRadarApi.Tests.V1.Controllers
         }
 
         [Fact]
-        public async Task GetTechnologyWithValidIDReturnsOKResponse()
+        public async Task GetTechnologyWithValidIdReturnsOkResponse()
         {
             // Arrange
             var expectedResponse = _fixture.Create<TechnologyResponseObject>();
-            _mockGetByIdUsecase.Setup(x => x.Execute(expectedResponse.Id)).ReturnsAsync(expectedResponse);
+            _mockGetByIdUseCase.Setup(x => x.Execute(expectedResponse.Id)).ReturnsAsync(expectedResponse);
 
             // Act
             var actualResponse = await _classUnderTest.ViewTechnology(expectedResponse.Id).ConfigureAwait(false) as OkObjectResult;
@@ -49,11 +51,11 @@ namespace TechRadarApi.Tests.V1.Controllers
         }
 
         [Fact]
-        public async Task GetTechnologyWithNonExistentIDReturnsNotFoundResponse()
+        public async Task GetTechnologyWithNonExistentIdReturnsNotFoundResponse()
         {
             // Arrange
             var id = Guid.NewGuid();
-            _mockGetByIdUsecase.Setup(x => x.Execute(id)).ReturnsAsync((TechnologyResponseObject) null);
+            _mockGetByIdUseCase.Setup(x => x.Execute(id)).ReturnsAsync((TechnologyResponseObject) null);
             // Act
             var response = await _classUnderTest.ViewTechnology(id).ConfigureAwait(false) as NotFoundObjectResult;
             // Assert
@@ -66,20 +68,20 @@ namespace TechRadarApi.Tests.V1.Controllers
             // Arrange
             var id = Guid.NewGuid();
             var exception = new ApplicationException("Test exception");
-            _mockGetByIdUsecase.Setup(x => x.Execute(id)).ThrowsAsync(exception);
-            // Act
-            Func<Task<IActionResult>> func = async () => await _classUnderTest.ViewTechnology(id).ConfigureAwait(false);
-
-            // Assert
-            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
+            _mockGetByIdUseCase.Setup(x => x.Execute(id)).ThrowsAsync(exception);
+            // Act + Assert
+            _classUnderTest.Invoking(x => x.ViewTechnology(id))
+                           .Should()
+                           .ThrowAsync<ApplicationException>()
+                           .WithMessage(exception.Message);
         }
 
         [Fact]
-        public async Task GetAllTechnologiesReturnsOKResponse()
+        public async Task GetAllTechnologiesReturnsOkResponse()
         {
             // Arrange
             var expectedResponse = new TechnologyResponseObjectList() { Technologies = _fixture.CreateMany<TechnologyResponseObject>().ToList() };
-            _mockGetAllUsecase.Setup(x => x.Execute()).ReturnsAsync(expectedResponse);
+            _mockGetAllUseCase.Setup(x => x.Execute()).ReturnsAsync(expectedResponse);
 
             // Act
             var actualResponse = await _classUnderTest.ListTechnologies().ConfigureAwait(false) as OkObjectResult;
@@ -91,11 +93,11 @@ namespace TechRadarApi.Tests.V1.Controllers
         }
 
         [Fact]
-        public async Task GetAllTechnologiesReturnsOKResponseWhenTheTableIsEmpty()
+        public async Task GetAllTechnologiesReturnsOkResponseWhenTheTableIsEmpty()
         {
             // Arrange
             var emptyResponseObject = new TechnologyResponseObjectList() { Technologies = new List<TechnologyResponseObject>() };
-            _mockGetAllUsecase.Setup(x => x.Execute()).ReturnsAsync(emptyResponseObject);
+            _mockGetAllUseCase.Setup(x => x.Execute()).ReturnsAsync(emptyResponseObject);
 
             // Act
             var response = await _classUnderTest.ListTechnologies().ConfigureAwait(false) as OkObjectResult;
@@ -109,25 +111,56 @@ namespace TechRadarApi.Tests.V1.Controllers
         {
             // Arrange
             var exception = new ApplicationException("Test exception");
-            _mockGetAllUsecase.Setup(x => x.Execute()).ThrowsAsync(exception);
-            // Act
-            Func<Task<IActionResult>> func = async () => await _classUnderTest.ListTechnologies().ConfigureAwait(false);
+            _mockGetAllUseCase.Setup(x => x.Execute()).ThrowsAsync(exception);
+            // Act + Assert
+            _classUnderTest.Invoking(x => x.ListTechnologies())
+                           .Should()
+                           .ThrowAsync<ApplicationException>()
+                           .WithMessage(exception.Message);
+        }
 
-            // Assert
-            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
+
+        [Fact]
+        public async Task PostTechnologyReturns201Created()
+        {
+            var request = _fixture.Create<CreateTechnologyRequest>();
+            var response = _fixture.Create<TechnologyResponseObject>();
+
+            _mockPostUseCase.Setup(x => x.Execute(request)).ReturnsAsync(response);
+
+            var result = await _classUnderTest.PostTechnology(request).ConfigureAwait(false);
+            //Assert
+            //
+            (result as IStatusCodeActionResult).StatusCode.Should().Be(201);
+            (result as ObjectResult)?.Value.Should().Be(response);
+        }
+
+        [Fact]
+        public void PostTechnologyExceptionThrown()
+        {
+            // Arrange
+            var request = _fixture.Create<CreateTechnologyRequest>();
+            var exception = new Exception("Some Exception");
+            _mockPostUseCase.Setup(x => x.Execute(request)).ThrowsAsync(exception);
+
+            // Act + Assert
+            _classUnderTest.Invoking(x => x.PostTechnology(request))
+                           .Should()
+                           .ThrowAsync<Exception>()
+                           .WithMessage(exception.Message);
         }
 
         [Fact]
         public async Task DeleteTechnologyReturnsOkResponse()
         {
             var query = DeletionQuery();
-            var TechnologyResponse = _fixture.Create<TechnologyResponseObject>();
+            var technologyResponse = _fixture.Create<TechnologyResponseObject>();
 
-            _mockDeleteByIdUsecase.Setup(x => x.Execute(query.Id)).ReturnsAsync(TechnologyResponse);
+            _mockDeleteByIdUseCase.Setup(x => x.Execute(query.Id)).ReturnsAsync(technologyResponse);
 
             var response = await _classUnderTest.DeleteTechnology(query.Id).ConfigureAwait(false);
             response.Should().BeOfType(typeof(OkObjectResult));
-            (response as OkObjectResult).Value.Should().BeEquivalentTo(TechnologyResponse);
+            (response as OkObjectResult).Value.Should().BeEquivalentTo(technologyResponse);
 
         }
 
@@ -135,7 +168,7 @@ namespace TechRadarApi.Tests.V1.Controllers
         public async Task DeleteTechnologyReturnsNotFound()
         {
             var query = DeletionQuery();
-            _mockDeleteByIdUsecase.Setup(x => x.Execute(query.Id)).ReturnsAsync((TechnologyResponseObject) null);
+            _mockDeleteByIdUseCase.Setup(x => x.Execute(query.Id)).ReturnsAsync((TechnologyResponseObject) null);
 
             var response = await _classUnderTest.DeleteTechnology(query.Id).ConfigureAwait(false);
             response.Should().BeOfType(typeof(NotFoundResult));
@@ -146,7 +179,7 @@ namespace TechRadarApi.Tests.V1.Controllers
         {
             var query = DeletionQuery();
             var exception = new ApplicationException("Test exception");
-            _mockDeleteByIdUsecase.Setup(x => x.Execute(query.Id)).ThrowsAsync(exception);
+            _mockDeleteByIdUseCase.Setup(x => x.Execute(query.Id)).ThrowsAsync(exception);
 
             Func<Task<IActionResult>> func = async () => await _classUnderTest.DeleteTechnology(query.Id).ConfigureAwait(false);
 
