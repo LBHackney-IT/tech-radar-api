@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using TechRadarApi.V1.Boundary.Request;
 
 namespace TechRadarApi.V1.Controllers
 {
@@ -17,7 +18,7 @@ namespace TechRadarApi.V1.Controllers
         private readonly IGetTechnologyByIdUseCase _getByIdUseCase;
         private readonly IPostNewTechnologyUseCase _postNewTechnologyUseCase;
         private readonly IDeleteTechnologyByIdUseCase _deleteTechnologyByIdUseCase;
-        public TechRadarApiController(IGetAllTechnologiesUseCase getAllUseCase, IGetTechnologyByIdUseCase getByIdUseCase, IDeleteTechnologyByIdUseCase deleteTechnologyByIdUseCase)
+        public TechRadarApiController(IGetAllTechnologiesUseCase getAllUseCase, IGetTechnologyByIdUseCase getByIdUseCase, IPostNewTechnologyUseCase postNewTechnologyUseCase, IDeleteTechnologyByIdUseCase deleteTechnologyByIdUseCase)
         {
             _getAllUseCase = getAllUseCase;
             _getByIdUseCase = getByIdUseCase;
