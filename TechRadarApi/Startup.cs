@@ -1,16 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using TechRadarApi.V1.Controllers;
+using Amazon;
+using Amazon.XRay.Recorder.Core;
 using Amazon.XRay.Recorder.Handlers.AwsSdk;
-using TechRadarApi.V1.Gateways;
-using TechRadarApi.V1.Infrastructure;
-using TechRadarApi.V1.UseCase;
-using TechRadarApi.V1.UseCase.Interfaces;
-using TechRadarApi.Versioning;
+using Hackney.Core.DynamoDb;
+using Hackney.Core.DynamoDb.HealthCheck;
+using Hackney.Core.HealthCheck;
+using Hackney.Core.Http;
+using Hackney.Core.JWT;
+using Hackney.Core.Logging;
+using Hackney.Core.Middleware.CorrelationId;
+using Hackney.Core.Middleware.Exception;
+using Hackney.Core.Middleware.Logging;
+using Hackney.Core.Middleware;
+using Hackney.Core.Validation.AspNet;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -21,9 +24,23 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text.Json.Serialization;
+using TechRadarApi.V1.Boundary.Request;
+using TechRadarApi.V1.Infrastructure;
+using TechRadarApi.Versioning;
+using TechRadarApi.V1.Gateways;
+using TechRadarApi.V1.UseCase.Interfaces;
+using TechRadarApi.V1.UseCase;
 
 namespace TechRadarApi
 {
+    [ExcludeFromCodeCoverage]
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -34,16 +51,25 @@ namespace TechRadarApi
         }
 
         public IConfiguration Configuration { get; }
-        private static List<ApiVersionDescription> _apiVersions { get; set; }
-        private const string ApiName = "Tech Radar API";
+        private static List<ApiVersionDescription> ApiVersions { get; set; }
+        private const string ApiName = "Tech Radar";
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddFluentValidation(Assembly.GetAssembly(typeof(CreateTechnologyRequestValidator)));
+
             services.AddCors();
+            services.AddHttpClient();
+            services.AddApiGateway();
+
             services
-                .AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+                .AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
+
             services.AddApiVersioning(o =>
             {
                 o.DefaultApiVersion = new ApiVersion(1, 0);
@@ -52,6 +78,8 @@ namespace TechRadarApi
             });
 
             services.AddSingleton<IApiVersionDescriptionProvider, DefaultApiVersionDescriptionProvider>();
+
+            services.AddDynamoDbHealthCheck<TechnologyDbEntity>();
 
             services.AddSwaggerGen(c =>
             {
@@ -91,7 +119,7 @@ namespace TechRadarApi
                 });
 
                 //Get every ApiVersion attribute specified and create swagger docs for them
-                foreach (var apiVersion in _apiVersions)
+                foreach (var apiVersion in ApiVersions)
                 {
                     var version = $"v{apiVersion.ApiVersion.ToString()}";
                     c.SwaggerDoc(version, new OpenApiInfo
@@ -110,33 +138,28 @@ namespace TechRadarApi
                     c.IncludeXmlComments(xmlPath);
             });
 
-            ConfigureLogging(services, Configuration);
+            services.ConfigureLambdaLogging(Configuration);
+
+            AWSXRayRecorder.InitializeInstance(Configuration);
+            AWSXRayRecorder.RegisterLogger(LoggingOptions.SystemDiagnostics);
 
             services.ConfigureDynamoDB();
+            services.AddLogCallAspect();
 
             RegisterGateways(services);
             RegisterUseCases(services);
+
+            services.AddSingleton<IConfiguration>(Configuration);
+            ConfigureHackneyCoreDi(services);
         }
 
-        private static void ConfigureLogging(IServiceCollection services, IConfiguration configuration)
+        private static void ConfigureHackneyCoreDi(IServiceCollection services)
         {
-            // We rebuild the logging stack so as to ensure the console logger is not used in production.
-            // See here: https://weblog.west-wind.com/posts/2018/Dec/31/Dont-let-ASPNET-Core-Default-Console-Logging-Slow-your-App-down
-            services.AddLogging(config =>
-            {
-                // clear out default configuration
-                config.ClearProviders();
-
-                config.AddConfiguration(configuration.GetSection("Logging"));
-                config.AddDebug();
-                config.AddEventSourceLogger();
-
-                if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == Environments.Development)
-                {
-                    config.AddConsole();
-                }
-            });
+            services.AddTokenFactory()
+                .AddHttpContextWrapper();
         }
+
+
 
         private static void RegisterGateways(IServiceCollection services)
         {
@@ -148,17 +171,18 @@ namespace TechRadarApi
             services.AddScoped<IGetAllTechnologiesUseCase, GetAllTechnologiesUseCase>();
             services.AddScoped<IGetTechnologyByIdUseCase, GetTechnologyByIdUseCase>();
             services.AddScoped<IDeleteTechnologyByIdUseCase, DeleteTechnologyByIdUseCase>();
+            services.AddScoped<IPostNewTechnologyUseCase, PostNewTechnologyUseCase>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             app.UseCors(builder => builder
-                .AllowAnyOrigin()
-                .AllowAnyHeader()
-                .AllowAnyMethod());
+                  .AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .WithExposedHeaders("ETag", "If-Match", "x-correlation-id"));
 
-            app.UseCorrelation();
 
             if (env.IsDevelopment())
             {
@@ -169,17 +193,19 @@ namespace TechRadarApi
                 app.UseHsts();
             }
 
+            app.UseCorrelationId();
+            app.UseLoggingScope();
+            app.UseCustomExceptionHandler(logger);
             app.UseXRay("tech-radar-api");
-
 
             //Get All ApiVersions,
             var api = app.ApplicationServices.GetService<IApiVersionDescriptionProvider>();
-            _apiVersions = api.ApiVersionDescriptions.ToList();
+            ApiVersions = api.ApiVersionDescriptions.ToList();
 
             //Swagger ui to view the swagger.json file
             app.UseSwaggerUI(c =>
             {
-                foreach (var apiVersionDescription in _apiVersions)
+                foreach (var apiVersionDescription in ApiVersions)
                 {
                     //Create a swagger endpoint for each swagger version
                     c.SwaggerEndpoint($"{apiVersionDescription.GetFormattedApiVersion()}/swagger.json",
@@ -192,7 +218,13 @@ namespace TechRadarApi
             {
                 // SwaggerGen won't find controllers that are routed via this technique.
                 endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+
+                endpoints.MapHealthChecks("/api/v1/healthcheck/ping", new HealthCheckOptions()
+                {
+                    ResponseWriter = HealthCheckResponseWriter.WriteResponse
+                });
             });
+            app.UseLogCall();
         }
     }
 }

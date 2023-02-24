@@ -12,6 +12,7 @@ using TechRadarApi.V1.Factories;
 
 namespace TechRadarApi.Tests.V1.UseCase
 {
+    [Collection("LogCall collection")]
     public class GetByIdUseCaseTests
     {
         private Mock<ITechnologyGateway> _mockGateway;
@@ -53,14 +54,15 @@ namespace TechRadarApi.Tests.V1.UseCase
         [Fact]
         public void GetTechnologyByIdExceptionIsThrown()
         {
-            // Assert
+            // Arrange
             var id = Guid.NewGuid();
             var exception = new ApplicationException("Test Exception");
             _mockGateway.Setup(x => x.GetTechnologyById(id)).ThrowsAsync(exception);
-            // Act
-            Func<Task<TechnologyResponseObject>> func = async () => await _classUnderTest.Execute(id).ConfigureAwait(false);
-            // Assert
-            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
+            // Act + Assert
+            _classUnderTest.Invoking(x => x.Execute(id))
+                           .Should()
+                           .ThrowAsync<ApplicationException>()
+                           .WithMessage(exception.Message);
         }
     }
 }

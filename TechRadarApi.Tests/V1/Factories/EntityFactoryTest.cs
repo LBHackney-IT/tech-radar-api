@@ -16,15 +16,12 @@ namespace TechRadarApi.Tests.V1.Factories
         public void CanMapADatabaseEntityToADomainObject()
         {
             // Arrange
-            var databaseEntity = _fixture.Build<TechnologyDbEntity>()
-                .With(technology => technology.Id, Guid.NewGuid().ToString())
-                .Create();
-
+            var databaseEntity = _fixture.Create<TechnologyDbEntity>();
             // Act    
             var entity = databaseEntity.ToDomain();
 
             //Assert
-            entity.Id.Should().Be(Guid.Parse(databaseEntity.Id));
+            entity.Id.Should().Be(databaseEntity.Id);
             entity.Name.Should().Be(databaseEntity.Name);
             entity.Description.Should().Be(databaseEntity.Description);
             entity.Category.Should().Be(databaseEntity.Category);

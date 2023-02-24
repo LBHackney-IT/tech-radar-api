@@ -14,6 +14,7 @@ using System;
 
 namespace TechRadarApi.Tests.V1.UseCase
 {
+    [Collection("LogCall collection")]
     public class GetAllUseCaseTests
     {
         private Mock<ITechnologyGateway> _mockGateway;
@@ -56,13 +57,14 @@ namespace TechRadarApi.Tests.V1.UseCase
         [Fact]
         public void GetAllTechnologiesExceptionIsThrown()
         {
-            // Assert
+            // Arrange
             var exception = new ApplicationException("Test Exception");
             _mockGateway.Setup(x => x.GetAll()).ThrowsAsync(exception);
-            // Act
-            Func<Task<TechnologyResponseObjectList>> func = async () => await _classUnderTest.Execute().ConfigureAwait(false);
-            // Assert
-            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
+            // Act + Assert
+            _classUnderTest.Invoking(x => x.Execute())
+                           .Should()
+                           .ThrowAsync<ApplicationException>()
+                           .WithMessage(exception.Message);
         }
     }
 }
