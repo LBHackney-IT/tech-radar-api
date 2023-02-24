@@ -179,6 +179,7 @@ workflows:
             branches:
               only: master
       - deploy-to-development:
+          context: api-nuget-token-context
           requires:
             - terraform-init-and-apply-to-development
           filters:
@@ -187,6 +188,7 @@ workflows:
   check-and-deploy-staging-and-production:
       jobs:
       - build-and-test:
+          context: api-nuget-token-context
           filters:
             branches:
               only: release
@@ -204,6 +206,7 @@ workflows:
             branches:
               only: release
       - deploy-to-staging:
+          context: api-nuget-token-context
           requires:
             - terraform-init-and-apply-to-staging
           filters:
@@ -234,6 +237,7 @@ workflows:
             branches:
               only: release
       - deploy-to-production:
+          context: api-nuget-token-context
           requires:
             - permit-production-release
             - terraform-init-and-apply-to-production
