@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using TechRadarApi.V1.Boundary.Request;
 using TechRadarApi.V1.Boundary.Response;
 using TechRadarApi.V1.Domain;
 using TechRadarApi.V1.Factories;
@@ -51,7 +52,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
             var entity = ConstructTestEntity();
             await SaveTestData(entity).ConfigureAwait(false);
             var uri = new Uri($"api/v1/technologies/{entity.Id}", UriKind.Relative);
-            var bodyParameters = _fixture.Create<UpdateTechnologyListItem>();
+            var bodyParameters = _fixture.Create<PatchTechnologyItem>();
 
             // Act
             var message = new HttpRequestMessage(HttpMethod.Patch, uri);
@@ -70,8 +71,8 @@ namespace TechRadarApi.Tests.V1.E2ETests
             // Arrange
             var TestToken =
                 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMTUwMTgxMTYwOTIwOTg2NzYxMTMiLCJlbWFpbCI6ImUyZS10ZXN0aW5nQGRldmVsb3BtZW50LmNvbSIsImlzcyI6IkhhY2tuZXkiLCJuYW1lIjoiVGVzdGVyIiwiZ3JvdXBzIjpbImUyZS10ZXN0aW5nIl0sImlhdCI6MTYyMzA1ODIzMn0.SooWAr-NUZLwW8brgiGpi2jZdWjyZBwp4GJikn0PvEw";
-            var pathParameters = _fixture.Create<PatchTechnologyByIdRequest>();
-            var bodyParameters = _fixture.Create<PatchTechnologyListItem>();
+            var pathParameters = _fixture.Create<TechnologyResponseObject>();
+            var bodyParameters = _fixture.Create<PatchTechnologyItem>();
             var technology = _fixture.Build<Technology>()
                               .With(x => x.Id, pathParameters.Id)
                               .Create();
@@ -101,8 +102,8 @@ namespace TechRadarApi.Tests.V1.E2ETests
             // Arrange
             var TestToken =
                 "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMTUwMTgxMTYwOTIwOTg2NzYxMTMiLCJlbWFpbCI6ImUyZS10ZXN0aW5nQGRldmVsb3BtZW50LmNvbSIsImlzcyI6IkhhY2tuZXkiLCJuYW1lIjoiVGVzdGVyIiwiZ3JvdXBzIjpbImUyZS10ZXN0aW5nIl0sImlhdCI6MTYyMzA1ODIzMn0.SooWAr-NUZLwW8brgiGpi2jZdWjyZBwp4GJikn0PvEw";
-            var pathParameters = _fixture.Create<PatchTechnologyByIdRequest>();
-            var bodyParameters = _fixture.Create<PatchTechnologyListItem>();
+            var pathParameters = _fixture.Create<TechnologyResponseObject>();
+            var bodyParameters = _fixture.Create<PatchTechnologyItem>();
             var technology = _fixture.Build<Technology>()
                               .With(x => x.Id, pathParameters.Id)
                               .Create();
@@ -118,6 +119,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
             var updatedTechnology = await DynamoDBContext.LoadAsync<TechnologyDbEntity>(technology.Id).ConfigureAwait(false);
+
             updatedTechnology.LastOrDefault().Name.Should().Be(bodyParameters.Name);
             updatedTechnology.LastOrDefault().Description.Should().Be(bodyParameters.Description);
             updatedTechnology.LastOrDefault().Category.Should().Be(bodyParameters.Category);
