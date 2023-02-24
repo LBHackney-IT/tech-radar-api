@@ -12,6 +12,7 @@ using TechRadarApi.V1.Domain;
 using TechRadarApi.V1.Gateways;
 using TechRadarApi.V1.Infrastructure;
 using TechRadarApi.V1.Boundary.Request;
+using Moq;
 
 namespace TechRadarApi.Tests.V1.Gateways
 {
@@ -20,7 +21,7 @@ namespace TechRadarApi.Tests.V1.Gateways
     {
         private readonly Fixture _fixture = new Fixture();
         private readonly IDynamoDbFixture _dbFixture;
-        private readonly TechnologyGateway _classUnderTest;
+        private TechnologyGateway _classUnderTest;
         private readonly List<Action> _cleanup = new List<Action>();
 
 
@@ -49,39 +50,6 @@ namespace TechRadarApi.Tests.V1.Gateways
             }
         }
 
-        [Fact]
-        public async Task GetTechnologyByIdReturnsNullIfTechnologyDoesntExist()
-        {
-            // Assert
-            var id = Guid.NewGuid();
-            // Act
-            var response = await _classUnderTest.GetTechnologyById(id).ConfigureAwait(false);
-            // Assert
-            response.Should().BeNull();
-        }
-
-        [Fact]
-        public async Task GetTechnologyByIdReturnsTheTechnologyIfItExists()
-        {
-            // Arrange
-            var entity = _fixture.Create<Technology>();
-            await _dbFixture.DynamoDbContext.SaveAsync<TechnologyDbEntity>(entity.ToDatabase()).ConfigureAwait(false);
-            _cleanup.Add(() => _dbFixture.DynamoDbContext.DeleteAsync<TechnologyDbEntity>(entity.Id).GetAwaiter().GetResult());
-            // Act
-            var response = await _classUnderTest.GetTechnologyById(entity.Id).ConfigureAwait(false);
-            // Assert
-            response.Should().BeEquivalentTo(entity);
-        }
-
-        [Fact]
-        public async Task GetAllTechnologiesReturnsEmptyArrayIfNoTechnologiesExist()
-        {
-            // Arrange + Act
-            var response = await _classUnderTest.GetAll().ConfigureAwait(false);
-            // Assert
-            response.Should().BeEmpty();
-        }
-
         private async Task<List<Technology>> CreateAndInsertTechnologies(int count)
         {
             var technologies = _fixture.CreateMany<TechnologyDbEntity>(count).ToList();
@@ -100,6 +68,37 @@ namespace TechRadarApi.Tests.V1.Gateways
         }
 
         [Fact]
+        public async Task GetTechnologyByIdReturnsNullIfTechnologyDoesntExist()
+        {
+            // Assert
+            var id = Guid.NewGuid();
+            // Act
+            var response = await _classUnderTest.GetTechnologyById(id).ConfigureAwait(false);
+            // Assert
+            response.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task GetTechnologyByIdReturnsTheTechnologyIfItExists()
+        {
+            // Arrange
+            var expectedResult = await CreateAndInsertTechnologies(1).ConfigureAwait(false);
+            // Act
+            var response = await _classUnderTest.GetTechnologyById(expectedResult.FirstOrDefault().Id).ConfigureAwait(false);
+            // Assert
+            response.Should().BeEquivalentTo(expectedResult.FirstOrDefault());
+        }
+
+        [Fact]
+        public async Task GetAllTechnologiesReturnsEmptyArrayIfNoTechnologiesExist()
+        {
+            // Arrange + Act
+            var response = await _classUnderTest.GetAll().ConfigureAwait(false);
+            // Assert
+            response.Should().BeEmpty();
+        }
+
+        [Fact]
         public async Task GetAllTechnologiesReturnsAnArrayOfAllTechnologiesInTheTable()
         {
             // Arrange
@@ -108,6 +107,23 @@ namespace TechRadarApi.Tests.V1.Gateways
             var response = await _classUnderTest.GetAll().ConfigureAwait(false);
             // Assert
             response.Should().BeEquivalentTo(expectedResult);
+        }
+
+        [Fact]
+        public void GetTechologyByIdExceptionIsThrown()
+        {
+            // Assert
+            var mockDynamoDb = new Mock<IDynamoDBContext>();
+            _classUnderTest = new TechnologyGateway(mockDynamoDb.Object);
+            var id = Guid.NewGuid();
+            var exception = new ApplicationException("Test Exception");
+            mockDynamoDb.Setup(x => x.LoadAsync<TechnologyDbEntity>(id.ToString(), default))
+                     .ThrowsAsync(exception);
+            // Act
+            Func<Task<Technology>> func = async () => await _classUnderTest.GetTechnologyById(id).ConfigureAwait(false);
+            // Assert
+            func.Should().Throw<ApplicationException>().WithMessage(exception.Message);
+            mockDynamoDb.Verify(x => x.LoadAsync<TechnologyDbEntity>(id.ToString(), default), Times.Once);
         }
 
         [Fact]
