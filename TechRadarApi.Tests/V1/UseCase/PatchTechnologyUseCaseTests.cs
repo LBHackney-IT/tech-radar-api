@@ -1,6 +1,7 @@
 using System.Linq;
 using AutoFixture;
 using TechRadarApi.V1.Boundary.Response;
+using TechRadarApi.V1.Boundary.Request;
 using TechRadarApi.V1.Domain;
 using TechRadarApi.V1.Factories;
 using TechRadarApi.V1.Gateways;
@@ -13,13 +14,14 @@ using System.Collections.Generic;
 using System;
 using Microsoft.AspNetCore.Mvc;
 using TechRadarApi.V1.Infrastructure;
+using System.Collections;
 
 namespace TechRadarApi.Tests.V1.UseCase
 {
     public class PatchTechnologyByIdUseCaseTests
     {
         private Mock<ITechnologyGateway> _mockGateway;
-        private DeleteTechnologyByIdUseCase _classUnderTest;
+        private PatchTechnologyByIdUseCase _classUnderTest;
         private Fixture _fixture;
 
         public PatchTechnologyByIdUseCaseTests()
@@ -33,20 +35,20 @@ namespace TechRadarApi.Tests.V1.UseCase
          public async Task AddsTechnologyToTechRadarSuccessfully()
         {
             //Arrange
-            var pathParameters = _fixture.Build<PatchTechnologyByIdRequest>().With(x => x.Id, Guid.Empty).Create();
-            var bodyParameters = _fixture.Create<PatchTechnologyListItem>();
+            var pathParameters = _fixture.Build<TechnologyResponseObject>().With(x => x.Id, Guid.Empty).Create();
+            var bodyParameters = _fixture.Create<PatchTechnologyItem>();
             var technologies = _fixture.Create<Technology>();
 
-            _mockGateway.Setup(x => x.GetAll(pathParameters.Id)).ReturnsAsync(technologies);
+            _mockGateway.Setup(x => x.GetAll()).ReturnsAsync(technologies);
 
             //Act
             var result = await _classUnderTest.Execute(pathParameters, bodyParameters).ConfigureAwait(false);
 
             //Assert
             var numberOfTechnologies = result.Technologies.Count;
-            _mockGateway.Verify(x => x.SaveTechRadar(It.IsAny<Technology>()), Times.Once());
-            result.Technolology.Should().Contain(x => x.Name == bodyParameters.Name);
-            result.Technolology.Distinct().Count();
+            _mockGateway.Verify(x => x.SaveTechRadar(It.IsAny<Technology>()), Times.Once()); // change gateway method
+            result.Technolologies.Should().Contain(x => x.Name == bodyParameters.Name);
+            result.Technolologies.Distinct().Count();
             numberOfTechnologies.Should().Be(technologies.Count);
         }
 
@@ -54,8 +56,8 @@ namespace TechRadarApi.Tests.V1.UseCase
         public async Task SuccessfullyPatchesAnExistingTechnology()
         {
             // Arrange
-            var pathParameters = _fixture.Create<PatchTechnologyByIdRequest>();
-            var bodyParameters = _fixture.Create<PatchTechnologyListItem>();
+            var pathParameters = _fixture.Build<TechnologyResponseObject>().With(x => x.Id, Guid.Empty).Create();
+            var bodyParameters = _fixture.Create<PatchTechnologyItem>();
             var technology = _fixture.Build<Technology>()
                               .With(x => x.Id, pathParameters.Id)
                               .Create();
@@ -69,7 +71,7 @@ namespace TechRadarApi.Tests.V1.UseCase
             //Assert
             _mockGateway.Verify(x => x.SaveTechRadar(It.IsAny<Technology>()), Times.Once());
 
-            result.technology.Should().Contain(x => x.Id == pathParameters.ApplicationId);
+            result.technology.Should().Contain(x => x.Id == pathParameters.Id);
             result.technology.Should().Contain(x => x.Name == bodyParameters.Name);
             result.technology.Should().Contain(x => x.Description == bodyParameters.Description);
             result.technology.Should().Contain(x => x.Category == bodyParameters.Category);
@@ -80,8 +82,8 @@ namespace TechRadarApi.Tests.V1.UseCase
         public void PatchTechnologyUseCaseAsyncExceptionIsThrown()
         {
             // Arrange
-            var pathParameters = _fixture.Create<PatchTechnologyByIdRequest>();
-            var bodyParameters = _fixture.Create<PatchTechnologyListItem>();
+            var pathParameters = _fixture.Build<TechnologyResponseObject>().With(x => x.Id, Guid.Empty).Create();
+            var bodyParameters = _fixture.Create<PatchTechnologyItem>();
             var exception = new ApplicationException("Test exception");
             _mockGateway.Setup(x => x.PatchTechnologyById(pathParameters.Id)).ThrowsAsync(exception);
 
@@ -96,8 +98,8 @@ namespace TechRadarApi.Tests.V1.UseCase
         public async Task UpdateTechnologyUseCaseReturnsNullIfTechnologyDoesNotExist()
         {
             // Arrange
-            var pathParameters = _fixture.Create<PatchTechnologyByIdRequest>();
-            var bodyParameters = _fixture.Create<PatchTechnologyListItem>();
+            var pathParameters = _fixture.Build<TechnologyResponseObject>().With(x => x.Id, Guid.Empty).Create();
+            var bodyParameters = _fixture.Create<PatchTechnologyItem>();
             _mockGateway.Setup(x => x.GetTechnologyById(pathParameters.Id)).ReturnsAsync((Technology) null);
 
             // Act
