@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using TechRadarApi.V1.Boundary.Request;
 
 namespace TechRadarApi.V1.Controllers
 {
@@ -16,11 +17,13 @@ namespace TechRadarApi.V1.Controllers
         private readonly IGetAllTechnologiesUseCase _getAllUseCase;
         private readonly IGetTechnologyByIdUseCase _getByIdUseCase;
         private readonly IDeleteTechnologyByIdUseCase _deleteTechnologyByIdUseCase;
-        public TechRadarApiController(IGetAllTechnologiesUseCase getAllUseCase, IGetTechnologyByIdUseCase getByIdUseCase, IDeleteTechnologyByIdUseCase deleteTechnologyByIdUseCase)
+        private readonly IPatchTechnologyByIdUseCase _patchTechnologyByIdUseCase;
+        public TechRadarApiController(IGetAllTechnologiesUseCase getAllUseCase, IGetTechnologyByIdUseCase getByIdUseCase, IDeleteTechnologyByIdUseCase deleteTechnologyByIdUseCase, IPatchTechnologyByIdUseCase patchTechnologyByIdUseCase)
         {
             _getAllUseCase = getAllUseCase;
             _getByIdUseCase = getByIdUseCase;
             _deleteTechnologyByIdUseCase = deleteTechnologyByIdUseCase;
+            _patchTechnologyByIdUseCase = patchTechnologyByIdUseCase;
         }
 
         [ProducesResponseType(typeof(TechnologyResponseObjectList), StatusCodes.Status200OK)]
@@ -51,6 +54,18 @@ namespace TechRadarApi.V1.Controllers
         public async Task<IActionResult> DeleteTechnology(Guid Id)
         {
             var response = await _deleteTechnologyByIdUseCase.Execute(Id).ConfigureAwait(false);
+            if (response == null) return NotFound();
+
+            return Ok(response);
+        }
+
+        [ProducesResponseType(typeof(TechnologyResponseObject), StatusCodes.Status200OK)]
+        [HttpPatch]
+        [Route("{id}")]
+
+        public async Task<IActionResult> PatchTechnology(TechnologyResponseObject pathParameters, PatchTechnologyItem bodyParameters)
+        {
+            var response = await _patchTechnologyByIdUseCase.Execute(pathParameters, bodyParameters).ConfigureAwait(false);
             if (response == null) return NotFound();
 
             return Ok(response);
