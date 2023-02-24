@@ -18,12 +18,14 @@ namespace TechRadarApi.V1.Controllers
         private readonly IGetTechnologyByIdUseCase _getByIdUseCase;
         private readonly IPostNewTechnologyUseCase _postNewTechnologyUseCase;
         private readonly IDeleteTechnologyByIdUseCase _deleteTechnologyByIdUseCase;
-        public TechRadarApiController(IGetAllTechnologiesUseCase getAllUseCase, IGetTechnologyByIdUseCase getByIdUseCase, IPostNewTechnologyUseCase postNewTechnologyUseCase, IDeleteTechnologyByIdUseCase deleteTechnologyByIdUseCase)
+        private readonly IPatchTechnologyByIdUseCase _patchTechnologyByIdUseCase;
+        public TechRadarApiController(IGetAllTechnologiesUseCase getAllUseCase, IGetTechnologyByIdUseCase getByIdUseCase, IPostNewTechnologyUseCase postNewTechnologyUseCase, IDeleteTechnologyByIdUseCase deleteTechnologyByIdUseCase, IPatchTechnologyByIdUseCase patchTechnologyByIdUseCase)
         {
             _getAllUseCase = getAllUseCase;
             _getByIdUseCase = getByIdUseCase;
             _postNewTechnologyUseCase = postNewTechnologyUseCase;
             _deleteTechnologyByIdUseCase = deleteTechnologyByIdUseCase;
+            _patchTechnologyByIdUseCase = patchTechnologyByIdUseCase;
         }
 
         [ProducesResponseType(typeof(TechnologyResponseObjectList), StatusCodes.Status200OK)]
