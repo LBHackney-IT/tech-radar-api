@@ -18,39 +18,20 @@ namespace TechRadarApi.V1.UseCase
         }
         public async Task<Technology> Execute(TechnologyResponseObject pathParameters, PatchTechnologyItem bodyParameters)
         {
-            var technology = await _gateway.GetAll().ConfigureAwait(false);
+            var technology = await _gateway.GetTechnologyById(pathParameters.Id).ConfigureAwait(false);
             if (technology == null)
                 return null;
-            if (pathParameters.Id != Guid.Empty)
-            {
-                var doesTechnologyExist = technology.Find(x => x.Id == pathParameters.Id);
-                if (doesTechnologyExist == null) return null;
-                technology.Remove(doesTechnologyExist);
 
-                var TechnologyData = new Technology()
-                {
-                    Id = (Guid) pathParameters.Id,
-                    Name = bodyParameters.Name ?? doesTechnologyExist.Name,
-                    Description = bodyParameters.Description ?? doesTechnologyExist.Description,
-                    Category = bodyParameters.Category ?? doesTechnologyExist.Category,
-                    Technique = bodyParameters.Technique ?? doesTechnologyExist.Technique
-                };
-
-                technology.Add(TechnologyData);
-            }
-            else
+            var TechnologyData = new Technology()
             {
-                var TechnologyData = new Technology()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = bodyParameters.Name,
-                    Description = bodyParameters.Description,
-                    Category = bodyParameters.Category,
-                    Technique = bodyParameters.Technique
-                };
-                technology.Add(TechnologyData);
-            }
-            await _gateway.SaveTechRadar(technology).ConfigureAwait(false);
+                Id = (Guid) pathParameters.Id,
+                Name = bodyParameters.Name ?? technology.Name,
+                Description = bodyParameters.Description ?? technology.Description,
+                Category = bodyParameters.Category ?? technology.Category,
+                Technique = bodyParameters.Technique ?? technology.Technique
+            };
+            
+            await _gateway.PatchTechnologyById(TechnologyData).ConfigureAwait(false);
             return technology;
         }
     }
