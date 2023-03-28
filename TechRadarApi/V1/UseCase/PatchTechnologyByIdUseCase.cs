@@ -30,8 +30,8 @@ namespace TechRadarApi.V1.UseCase
                 Category = bodyParameters.Category ?? technology.Category,
                 Technique = bodyParameters.Technique ?? technology.Technique
             };
-            
-            await _gateway.PatchTechnologyById(TechnologyData).ConfigureAwait(false);
+
+            await _gateway.PatchTechnology(TechnologyData).ConfigureAwait(false);
             return technology;
         }
     }
