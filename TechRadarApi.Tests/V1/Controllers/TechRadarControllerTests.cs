@@ -12,15 +12,17 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using TechRadarApi.V1.Domain;
 
 namespace TechRadarApi.Tests.V1.Controllers
 {
     public class TechRadarApiControllerTests
     {
         private readonly TechRadarApiController _classUnderTest;
-        private readonly Mock<IGetTechnologyByIdUseCase> _mockGetByIdUsecase;
-        private readonly Mock<IGetAllTechnologiesUseCase> _mockGetAllUsecase;
-        private readonly Mock<IDeleteTechnologyByIdUseCase> _mockDeleteByIdUsecase;
+        private readonly Mock<IGetTechnologyByIdUseCase> _mockGetByIdUseCase;
+        private readonly Mock<IGetAllTechnologiesUseCase> _mockGetAllUseCase;
+        private readonly Mock<IDeleteTechnologyByIdUseCase> _mockDeleteByIdUseCase;
+        private readonly Mock<IPostNewTechnologyUseCase> _mockPostUseCase;
         private readonly Mock<IPatchTechnologyByIdUseCase> _mockPatchTechnologyByIdUseCase;
 
 
@@ -28,10 +30,12 @@ namespace TechRadarApi.Tests.V1.Controllers
 
         public TechRadarApiControllerTests()
         {
-            _mockGetAllUsecase = new Mock<IGetAllTechnologiesUseCase>();
-            _mockGetByIdUsecase = new Mock<IGetTechnologyByIdUseCase>();
-            _mockDeleteByIdUsecase = new Mock<IDeleteTechnologyByIdUseCase>();
-            _classUnderTest = new TechRadarApiController(_mockGetAllUsecase.Object, _mockGetByIdUsecase.Object, _mockDeleteByIdUsecase.Object);
+            _mockGetAllUseCase = new Mock<IGetAllTechnologiesUseCase>();
+            _mockGetByIdUseCase = new Mock<IGetTechnologyByIdUseCase>();
+            _mockDeleteByIdUseCase = new Mock<IDeleteTechnologyByIdUseCase>();
+            _mockPostUseCase = new Mock<IPostNewTechnologyUseCase>();
+            _mockPatchTechnologyByIdUseCase = new Mock<IPatchTechnologyByIdUseCase>();
+            _classUnderTest = new TechRadarApiController(_mockGetAllUseCase.Object, _mockGetByIdUseCase.Object, _mockPostUseCase.Object, _mockDeleteByIdUseCase.Object, _mockPatchTechnologyByIdUseCase.Object);
         }
 
         [Fact]
@@ -191,12 +195,12 @@ namespace TechRadarApi.Tests.V1.Controllers
         public async Task UpdateTechnologyAsyncReturnsNoContentResponse()
         {
             // Arrange
-            (var pathParameters, var bodyParameters) = ConstructUpdateApplicationQuery();
+            (var pathParameters, var bodyParameters) = ConstructUpdateTechnologyQuery();
             var technology = _fixture.Create<Technology>();
             _mockPatchTechnologyByIdUseCase.Setup(x => x.Execute(pathParameters, bodyParameters)).ReturnsAsync((Technology) technology);
 
             // Act
-            var response = await _classUnderTest.PatchApplication(pathParameters, bodyParameters).ConfigureAwait(false);
+            var response = await _classUnderTest.PatchTechnology(bodyParameters, pathParameters).ConfigureAwait(false); // double check order of body and path
 
             // Assert
             response.Should().BeOfType(typeof(NoContentResult));
@@ -209,17 +213,17 @@ namespace TechRadarApi.Tests.V1.Controllers
             _mockPatchTechnologyByIdUseCase.Setup(x => x.Execute(pathParameters, bodyParameters)).ReturnsAsync((Technology) null);
 
             // Act
-            var response = await _classUnderTest.PatchTechnology(pathParameters, bodyParameters).ConfigureAwait(false);
+            var response = await _classUnderTest.PatchTechnology(bodyParameters, pathParameters).ConfigureAwait(false); // double check order of body and path
 
             // Assert
             response.Should().BeOfType(typeof(NotFoundObjectResult));
             (response as NotFoundObjectResult).Value.Should().Be(pathParameters.Id);
         }
 
-          private (PatchTechnologyByIdRequest, PatchTechnologyListItem) ConstructUpdateTechnologyQuery()
+          private (TechnologyResponseObject, PatchTechnologyItem) ConstructUpdateTechnologyQuery()
         {
-            var pathParameters = _fixture.Create<PatchTechnologyByIdRequest>();
-            var bodyParameters = _fixture.Create<PatchTechnologyListItem>();
+            var pathParameters = _fixture.Create<TechnologyResponseObject>();
+            var bodyParameters = _fixture.Create<PatchTechnologyItem>();
             return (pathParameters, bodyParameters);
         }
 
