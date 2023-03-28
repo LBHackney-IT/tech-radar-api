@@ -46,7 +46,7 @@ namespace TechRadarApi.V1.Gateways
             return databaseEntity.ToDomain();
         }
 
-        public async Task<Technology> PatchTechnologyById(Technology technology)
+        public async Task<Technology> PatchTechnology(Technology technology)
         {
             var dbTechnology = technology.ToDatabase();
             await _dynamoDbContext.SaveAsync<TechnologyDbEntity>(dbTechnology).ConfigureAwait(false);
