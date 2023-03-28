@@ -1,4 +1,3 @@
-using System.Linq;
 using AutoFixture;
 using TechRadarApi.V1.Boundary.Response;
 using TechRadarApi.V1.Boundary.Request;
@@ -10,11 +9,7 @@ using FluentAssertions;
 using Moq;
 using Xunit;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using System;
-using Microsoft.AspNetCore.Mvc;
-using TechRadarApi.V1.Infrastructure;
-using System.Collections;
 
 namespace TechRadarApi.Tests.V1.UseCase
 {
@@ -37,19 +32,17 @@ namespace TechRadarApi.Tests.V1.UseCase
             //Arrange
             var pathParameters = _fixture.Build<TechnologyResponseObject>().With(x => x.Id, Guid.Empty).Create();
             var bodyParameters = _fixture.Create<PatchTechnologyItem>();
-            var technologies = _fixture.Create<Technology>();
+            var technology = _fixture.Create<Technology>();
 
-            _mockGateway.Setup(x => x.GetAll()).ReturnsAsync(technologies);
+            //create an item and save it instead
+            _mockGateway.Setup(x => x.GetTechnologyById(pathParameters.Id)).ReturnsAsync(technology);
 
             //Act
             var result = await _classUnderTest.Execute(pathParameters, bodyParameters).ConfigureAwait(false);
 
             //Assert
-            var numberOfTechnologies = result.Technologies.Count;
-            _mockGateway.Verify(x => x.SaveTechRadar(It.IsAny<Technology>()), Times.Once()); // change gateway method
-            result.Technolologies.Should().Contain(x => x.Name == bodyParameters.Name);
-            result.Technolologies.Distinct().Count();
-            numberOfTechnologies.Should().Be(technologies.Count);
+            _mockGateway.Verify(x => x.PatchTechnology(It.IsAny<Technology>()), Times.Once());
+            result.Should().Contain(x => x.Name == bodyParameters.Name);
         }
 
         [Fact]
@@ -69,13 +62,13 @@ namespace TechRadarApi.Tests.V1.UseCase
             var result = await _classUnderTest.Execute(pathParameters, bodyParameters).ConfigureAwait(false);
 
             //Assert
-            _mockGateway.Verify(x => x.SaveTechRadar(It.IsAny<Technology>()), Times.Once());
+            _mockGateway.Verify(x => x.PatchTechnology(It.IsAny<Technology>()), Times.Once());
 
-            result.technology.Should().Contain(x => x.Id == pathParameters.Id);
-            result.technology.Should().Contain(x => x.Name == bodyParameters.Name);
-            result.technology.Should().Contain(x => x.Description == bodyParameters.Description);
-            result.technology.Should().Contain(x => x.Category == bodyParameters.Category);
-            result.technology.Should().Contain(x => x.Technique == bodyParameters.Technique);
+            result.Should().Contain(x => x.Id == pathParameters.Id);
+            result.Should().Contain(x => x.Name == bodyParameters.Name);
+            result.Should().Contain(x => x.Description == bodyParameters.Description);
+            result.Should().Contain(x => x.Category == bodyParameters.Category);
+            result.Should().Contain(x => x.Technique == bodyParameters.Technique);
         }
 
         [Fact]
@@ -85,7 +78,7 @@ namespace TechRadarApi.Tests.V1.UseCase
             var pathParameters = _fixture.Build<TechnologyResponseObject>().With(x => x.Id, Guid.Empty).Create();
             var bodyParameters = _fixture.Create<PatchTechnologyItem>();
             var exception = new ApplicationException("Test exception");
-            _mockGateway.Setup(x => x.PatchTechnologyById(pathParameters.Id)).ThrowsAsync(exception);
+            _mockGateway.Setup(x => x.PatchTechnology(pathParameters)).ThrowsAsync(exception);
 
             // Act
             Func<Task<Technology>> func = async () => await _classUnderTest.Execute(pathParameters, bodyParameters).ConfigureAwait(false);
@@ -95,7 +88,7 @@ namespace TechRadarApi.Tests.V1.UseCase
         }
 
         [Fact]
-        public async Task UpdateTechnologyUseCaseReturnsNullIfTechnologyDoesNotExist()
+        public async Task PatchTechnologyUseCaseReturnsNullIfTechnologyDoesNotExist()
         {
             // Arrange
             var pathParameters = _fixture.Build<TechnologyResponseObject>().With(x => x.Id, Guid.Empty).Create();

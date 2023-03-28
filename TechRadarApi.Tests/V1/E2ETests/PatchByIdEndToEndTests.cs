@@ -1,6 +1,7 @@
 using Amazon.DynamoDBv2.DataModel;
 using AutoFixture;
 using FluentAssertions;
+using Hackney.Core.Testing.DynamoDb;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -23,12 +24,14 @@ namespace TechRadarApi.Tests.V1.E2ETests
 
         private readonly Fixture _fixture = new Fixture();
         public TechnologyDbEntity Technology { get; private set; }
-        private readonly DynamoDbIntegrationTests<Startup> _dbFixture;
+        private readonly IDynamoDbFixture _dbFixture;
+        private readonly HttpClient _client;
         private readonly List<Action> _cleanupActions = new List<Action>();
 
-        public PatchByIdEndToEndTests(DynamoDbIntegrationTests<Startup> dbFixture)
+        public PatchByIdEndToEndTests(AwsMockWebApplicationFactory<Startup> appFactory)
         {
-            _dbFixture = dbFixture;
+            _dbFixture = appFactory.DynamoDbFixture;
+            _client = appFactory.Client;
         }
 
         private Technology ConstructTestEntity()
@@ -88,7 +91,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-            var updatedTechnology = await DynamoDBContext.LoadAsync<TechnologyDbEntity>(technology.Id).ConfigureAwait(false);
+            var updatedTechnology = await _dbFixture.DynamoDbContext.SaveAsync<TechnologyDbEntity>(technology.Id).ConfigureAwait(false);
             updatedTechnology.LastOrDefault().Name.Should().Be(bodyParameters.Name);
             updatedTechnology.LastOrDefault().Description.Should().Be(bodyParameters.Description);
             updatedTechnology.LastOrDefault().Category.Should().Be(bodyParameters.Category);
@@ -118,7 +121,7 @@ namespace TechRadarApi.Tests.V1.E2ETests
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.NoContent);
-            var updatedTechnology = await DynamoDBContext.LoadAsync<TechnologyDbEntity>(technology.Id).ConfigureAwait(false);
+            var updatedTechnology = await _dbFixture.DynamoDbContext.SaveAsync<TechnologyDbEntity>(technology.Id).ConfigureAwait(false);
 
             updatedTechnology.LastOrDefault().Name.Should().Be(bodyParameters.Name);
             updatedTechnology.LastOrDefault().Description.Should().Be(bodyParameters.Description);
